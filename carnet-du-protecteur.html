@@ -1,0 +1,1453 @@
+<title>Carnet du Protecteur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IM+Fell+English+SC&display=swap">
+<style>
+/* Mise en page : carnet de voyage à onglets — bandeau d'état collant en haut, barre d'onglets en bas, une colonne de cartes au centre. */
+:root{
+  --bg:#E9EEE6; --surface:#F7F9F3; --sunk:#DDE4D9; --ink:#1B2521; --muted:#56635C; --line:#C3CDBF;
+  --accent:#2C6248; --accent-ink:#FFFFFF; --lantern:#A86A12; --danger:#A23A2C; --ok:#2B7346;
+  --font-display:"IM Fell English SC", "Palatino Linotype", Georgia, serif;
+  --font-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1613; --surface:#17211D; --sunk:#0B110E; --ink:#E2E9E1; --muted:#9BA9A0; --line:#2B3A33;
+  --accent:#86C29C; --accent-ink:#0C1812; --lantern:#E5AA4C; --danger:#EA8474; --ok:#7FCC97; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F1613; --surface:#17211D; --sunk:#0B110E; --ink:#E2E9E1; --muted:#9BA9A0; --line:#2B3A33;
+  --accent:#86C29C; --accent-ink:#0C1812; --lantern:#E5AA4C; --danger:#EA8474; --ok:#7FCC97; color-scheme:dark }
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-size:1.45rem}
+h3{font-size:1.15rem}
+p{margin:0}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:8px 110px;display:flex;flex-direction:column;gap:14px}
+
+/* Bandeau d'état */
+.status{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.status-in{max-width:640px;margin:0 auto;padding:8px 16px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-variant-numeric:tabular-nums}
+.stat{display:flex;align-items:baseline;gap:4px;font-size:.95rem}
+.stat b{font-weight:700}
+.stat .lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.78rem;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.chip.warn{border-color:var(--lantern);color:var(--lantern)}
+.chip.bad{border-color:var(--danger);color:var(--danger)}
+.chip.good{border-color:var(--ok);color:var(--ok)}
+
+/* Barre d'onglets */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{background:none;border:0;padding:10px 2px 9px;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:700}
+
+/* Cartes et contrôles */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card > header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 12px;cursor:pointer;line-height:1.2;text-align:center}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.lantern{border-color:var(--lantern);color:var(--lantern);font-weight:700}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.sm{padding:5px 9px;font-size:.85rem}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;cursor:pointer;font-size:.85rem}
+:focus-visible{outline:2px solid var(--lantern);outline-offset:2px}
+input[type=text],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+textarea{min-height:70px;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+details{border-top:1px solid var(--line);padding-top:8px}
+details > summary{cursor:pointer;font-weight:700;list-style:none}
+details > summary::before{content:"▸ ";color:var(--muted)}
+details[open] > summary::before{content:"▾ "}
+
+/* Attributs */
+.attrs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.attr{border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--bg)}
+.attr .name{font-family:var(--font-display);font-size:1.05rem}
+.attr .val{font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+.attr .val small{font-size:.9rem;color:var(--muted);font-weight:400}
+.pips{display:flex;gap:3px}
+.pip{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--accent)}
+.pip.on{background:var(--accent)}
+.step{display:flex;gap:4px}
+.step button{min-width:34px;height:30px;padding:0 6px;border-radius:6px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:.85rem}
+.counter{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.counter:last-child{border-bottom:0}
+.counter .v{font-variant-numeric:tabular-nums;font-weight:700;min-width:3ch;text-align:right}
+
+/* Liste */
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);min-width:0}
+.li:last-child{border-bottom:0}
+.li .grow{flex:1;min-width:0}
+.li .qty{font-variant-numeric:tabular-nums;font-weight:700}
+
+/* Carte hexagonale */
+.mapbox{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk);touch-action:pan-x pan-y}
+.mapbox svg{display:block;margin:0 auto}
+.hex{cursor:pointer}
+.hex polygon{stroke:var(--line);stroke-width:1}
+.hex.blank polygon{fill:var(--surface)}
+.hex.here polygon{stroke:var(--lantern);stroke-width:3.5}
+.hex.sel polygon{stroke:var(--ink);stroke-width:2.5}
+.hex.paint polygon{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:4 3}
+.hex text{font-size:8px;fill:var(--muted);pointer-events:none;font-family:var(--font-body)}
+.hex.filled text{fill:#F4F7F1}
+.hex .mark{font-size:11px;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.8rem}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* Horloge */
+.clock{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+.clock svg{width:120px;height:120px}
+.clock .seg{stroke:var(--surface);stroke-width:2}
+.clock .day{fill:#E8C66A}
+.clock .night{fill:#3B4E7A}
+.clock .seg.cur{stroke:var(--lantern);stroke-width:4}
+.clock text{font-size:9px;fill:var(--muted);font-family:var(--font-body)}
+
+/* Dés et cartes */
+.dice{display:flex;gap:8px;flex-wrap:wrap}
+.die{width:46px;height:46px;border-radius:9px;border:2px solid var(--ink);display:grid;place-items:center;font-size:1.4rem;font-weight:700;background:var(--surface);font-variant-numeric:tabular-nums}
+.die.off{opacity:.35;border-style:dashed}
+.die.win{border-color:var(--ok);color:var(--ok)}
+.die.lose{border-color:var(--danger);color:var(--danger)}
+.pcard{width:64px;height:90px;border-radius:8px;border:1.5px solid var(--ink);background:#FBFBF7;color:#1B1B1B;display:flex;flex-direction:column;justify-content:space-between;padding:5px 7px;font-weight:700;font-size:1.05rem;flex:none}
+.pcard.red{color:#B3261E}
+.pcard .mid{font-size:1.8rem;text-align:center;line-height:1}
+.pcard .bot{transform:rotate(180deg)}
+.verdict{font-family:var(--font-display);font-size:1.5rem}
+.verdict.ok{color:var(--ok)}
+.verdict.ko{color:var(--danger)}
+
+/* Résultats de tables */
+.result{border-left:3px solid var(--accent);padding:6px 10px;background:var(--bg);border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:6px}
+.result .k{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent)}
+.result.unknown{border-left-color:var(--lantern)}
+.choose{display:flex;flex-direction:column;gap:6px}
+.choose .btn{text-align:left}
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+.tbl th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:400}
+.tblwrap{overflow-x:auto}
+
+/* Fenêtre du bas */
+.scrim{position:fixed;inset:0;background:rgba(8,12,10,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line)}
+.sheet .grab{width:44px;height:4px;border-radius:4px;background:var(--line);align-self:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:99px;z-index:60;font-size:.9rem;max-width:90vw}
+.banner{border:1px solid var(--lantern);background:var(--surface);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px}
+.banner.bad{border-color:var(--danger)}
+.journal-entry{border-bottom:1px solid var(--line);padding:8px 0;display:flex;flex-direction:column;gap:3px}
+.journal-entry:last-child{border-bottom:0}
+.journal-entry .meta{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.journal-entry .txt{white-space:pre-wrap;overflow-wrap:anywhere}
+.arch{display:grid;gap:8px}
+.arch label{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:flex-start;cursor:pointer;background:var(--bg)}
+.arch input{margin-top:4px}
+.hero-title{font-family:var(--font-display);font-size:2rem;line-height:1.1}
+@media (prefers-reduced-motion: no-preference){ .sheet{animation:up .18s ease-out} @keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}} }
+</style>
+
+<div id="status" class="status"></div>
+<main id="main" class="wrap"></main>
+<nav class="tabs" aria-label="Sections"><div class="in" id="tabs"></div></nav>
+<div id="layer"></div>
+
+<script>
+"use strict";
+/* ================== Données du livre ================== */
+const BIOMES = {
+  noyau:  {n:"Le Noyau", c:"#6C628F", size:1},
+  foret:  {n:"Forêt des Ombres", c:"#2F5240", size:3, p:17, tool:"Hache", enc:"enc_foret", col:"col_foret",
+           q:"Comment vivez-vous votre amitié avec la nuit ? Comment l’obscurité peut-elle abriter d’autres sentiments que la peur ?"},
+  plaine: {n:"Plaine inondée", c:"#4C83B3", size:3, p:21, enc:"enc_plaine",
+           q:"Comment dompter la force des cascades et apprendre à être fluide comme les rivières ?",
+           warn:"De nuit, l’obscurité vous perd : impossible de quitter la plaine avant l’aube. Vous pouvez y remplir un arrosoir."},
+  jungle: {n:"Jungle de champignons", c:"#8A4C93", size:2, p:25, enc:"enc_jungle",
+           q:"Comment ce qui se nourrit de la mort peut-il donner de la force à ce qui est vivant ?",
+           warn:"Spores : sans tenue fongique, quittez l’hexagone ou faites un test de Courage (Échec : −1 Âme). Les trains ne traversent pas ce biome."},
+  mer:    {n:"Mer champêtre", c:"#83A93A", tx:"#1B2521", size:3, p:29, tool:"Ciseaux de jardinage", enc:"enc_mer", col:"col_mer",
+           q:"Comment faire en sorte que le vent souffle en votre faveur ? Comment la verdure qui vous entoure peut-elle vous aider ?"},
+  desert: {n:"Désert silencieux", c:"#CC9247", tx:"#1B2521", size:2, p:33, tool:"Pioche", enc:"enc_desert", col:"col_desert",
+           q:"Comment le silence peut-il vous soutenir et le bruit vous protéger ?",
+           warn:"Le jour : −1 point d’Attribut au choix pour chaque hexagone exploré sans protection contre la chaleur."},
+  jardins:{n:"Jardins titanesques", c:"#2E9A82", size:null, p:39, enc:"enc_jardins",
+           q:"Lisez la question de Magie page 39."}
+};
+const BIOME_ROLL = ["foret","plaine","jungle","mer","desert","jardins"];
+const MARKS = [["Village","⌂"],["Ferme","⌂"],["Comptoir","¤"],["Ruine","✶"],["Gare","≡"],["Oasis","○"],["Jardin","✿"],["Créature","!"],["Lucioles","✧"],["Habitant","☺"]];
+
+/* Une table : die = d6 | d66 | card ; mode (cartes) = suit | value | valuecolor.
+   k = faces du dé ou cartes, "?" = correspondance à apprendre lors du premier tirage.
+   check = correspondance devinée, à confirmer dans le livre. */
+const T = {};
+function def(id, o){ T[id] = Object.assign({id, die:"d6"}, o); }
+
+def("biome", {title:"Biome", page:9, check:false, e:BIOME_ROLL.map((b,i)=>({k:String(i+1), t:BIOMES[b].n, biome:b}))});
+
+def("enc_foret", {title:"Rencontres · Forêt des Ombres", page:17, e:[
+  {k:"?", t:"Ombres denses : tout ce que vous avez trouvé dans ces 3 hexagones de Forêt est effacé du journal et de la carte. Si vous repassez, tirez d’autres rencontres."},
+  {k:"?", t:"Un village Bruja (p. 18). Tirez 5 cartes pour le définir.", act:"village", mark:"Village"},
+  {k:"?", t:"Un Essaim de lucioles : une fois par jour, en passant ici, récupérez 1 point d’Attribut au choix.", mark:"Lucioles"},
+  {k:"?", t:"Une créature : tirez une carte.", sub:"cre_foret", mark:"Créature"}]});
+def("cre_foret", {title:"Créature · Forêt des Ombres", page:17, die:"card", mode:"suit", e:[
+  {k:"?", t:"Un groupe de Yabas (Âme 6, p. 19). Offrez-leur des cadeaux : 6 cadeaux acceptés = amitié éternelle."},
+  {k:"?", t:"Un Yaba perdu (Âme 2, p. 19). Le lichen des Hérissins l’attire ; ramenez-le à un groupe : +1 Honneur."},
+  {k:"?", t:"Un Arbre guerrier (Âme 4, p. 19) : il vous attaque.", foe:{n:"Arbre guerrier", ame:4}},
+  {k:"?", t:"Un Pizi (Âme 1, p. 62) : il vous suit dans ce biome, +1 Courage (max 5) jusqu’à ce que vous en sortiez."}]});
+
+def("enc_plaine", {title:"Rencontres · Plaine inondée", page:21, e:[
+  {k:"?", t:"L’eau apaise votre fatigue : +1 Courage (max 5) jusqu’au prochain passage entre le jour et la nuit."},
+  {k:"?", t:"Un voyageur croise votre chemin (p. 57). Si vous revenez, il ne sera plus là.", act:"habitant"},
+  {k:"?", t:"Un Comptoir (p. 23).", act:"comptoir", mark:"Comptoir"},
+  {k:"?", t:"Un Hérissin (p. 22) : tirez une carte.", sub:"cre_herissin", mark:"Créature"},
+  {k:"?", t:"Une oie céleste : se chevauche si vous la nourrissez ou réussissez un test de Courage. Elle vous emmène vers un hexagone déjà exploré sans avancer l’Horloge."}]});
+def("cre_herissin", {title:"Hérissin", page:22, die:"card", mode:"suit", e:[
+  {k:"?", t:"Un Hérissin paisible (Âme 3) : il vous ignore tant qu’il ne se sent pas menacé. Lichen : pince à oursin + test de Courage."},
+  {k:"?", t:"Un Hérissin agressif (Âme 3) : combattre, fuir ou le rassurer.", foe:{n:"Hérissin agressif", ame:3}}]});
+
+def("enc_jungle", {title:"Rencontres · Jungle de champignons", page:25, e:[
+  {k:"?", t:"Tempête de spores : aucun équipement ne vous protège. Perdez 1 point dans l’Attribut de votre choix."},
+  {k:"?", t:"Une Ruine au milieu des champignons (p. 63).", act:"ruine", mark:"Ruine"},
+  {k:"?", t:"Un groupe de Mousserons (p. 27). Leur nombre : 1D6.", act:"d6", mark:"Habitant"},
+  {k:"?", t:"Un Bolet Titan (p. 26) : tirez une carte.", sub:"cre_bolet", mark:"Créature"},
+  {k:"?", t:"Un Bolet Titan étendu au sol : choisissez 1 objet dans sa table de collecte (p. 26), même sans matériel d’escalade.", act:"bolet"}]});
+def("cre_bolet", {title:"Bolet Titan", page:25, die:"card", mode:"suit", e:[
+  {k:"?", t:"Bolet Titan stationnaire (Âme 9) : pour grimper, 1 Succès. Échec : −1 Attribut au choix."},
+  {k:"?", t:"Bolet Titan ambulant (Âme 9) : pour grimper, 2 Succès. Échec : −1 Attribut au choix."},
+  {k:"?", t:"Bolet Titan stationnaire et vénéneux (Âme 9) : 1 Succès ; sans protection, −1 Âme immédiatement."},
+  {k:"?", t:"Bolet Titan ambulant et vénéneux (Âme 9) : 2 Succès ; sans protection, −1 Âme immédiatement."}]});
+def("col_bolet", {title:"Collecte · sommet d’un Bolet Titan", page:26, check:false, e:[
+  {k:"1", t:"100 pièces.", coins:100}, {k:"2", t:"3 Champignons communs.", items:[["Champignon commun",3]]},
+  {k:"3", t:"1 Champignon de l’âme.", items:[["Champignon de l’âme",1]]}, {k:"4", t:"1 Champignon de Courage.", items:[["Champignon de Courage",1]]},
+  {k:"5", t:"1 Champignon d’Endurance.", items:[["Champignon d’Endurance",1]]}, {k:"6", t:"L’un des choix ci-dessus.", choice:true}]});
+
+def("enc_mer", {title:"Rencontres · Mer champêtre", page:29, e:[
+  {k:"?", t:"Vents contraires : mangez ou réussissez un test de Courage. Échec : −1 Endurance ou un objet au choix. La prochaine fois, ils auront cessé."},
+  {k:"?", t:"Un voyageur croise votre chemin (p. 57). Si vous revenez, il ne sera plus là.", act:"habitant"},
+  {k:"?", t:"Un jardin communautaire : choisissez un objet dans la table de collecte (p. 30) sans outil. Marquez-le récolté ; arrosez-le pour le réutiliser.", mark:"Jardin"},
+  {k:"?", t:"Une ferme Cucurbitus (p. 30). Tirez 5 cartes pour la définir. Fermée le jour.", act:"village", mark:"Ferme"},
+  {k:"?", t:"Une créature : tirez une carte.", sub:"cre_mer", mark:"Créature"}]});
+def("cre_mer", {title:"Créature · Mer champêtre", page:29, die:"card", mode:"suit", e:[
+  {k:"?", t:"Un Sauriflore rouge (Âme 4, p. 30-31). Il mange des laréons rouges."},
+  {k:"?", t:"Un Sauriflore jaune (Âme 4, p. 30-31). Il mange des laréons jaunes."},
+  {k:"?", t:"Un Sauriflore blanc (Âme 4, p. 30-31). Il mange des laréons de toutes les couleurs."},
+  {k:"?", t:"Un Pizi (Âme 1, p. 62) : il vous suit dans ce biome, +1 Courage (max 5) jusqu’à ce que vous en sortiez."}]});
+
+def("enc_desert", {title:"Rencontres · Désert silencieux", page:33, e:[
+  {k:"?", t:"Une Ruine émerge des rochers (p. 63).", act:"ruine", mark:"Ruine"},
+  {k:"?", t:"Une oasis (p. 36) : tirez une carte.", sub:"cre_oasis", mark:"Oasis"},
+  {k:"?", t:"Un Kiore (p. 34). Personnalité p. 57. Il aime les paris. Si vous revenez, il ne sera plus là.", act:"kiore", mark:"Habitant"},
+  {k:"?", t:"Un Scarabée du désert (p. 37) : tirez une carte.", sub:"cre_scarabee", mark:"Créature"}]});
+def("cre_oasis", {title:"Oasis", page:36, die:"card", mode:"suit", e:[
+  {k:"?", t:"Un paradis de palmiers : reposez-vous une fois par jour (+1 Attribut au choix). Remplissez votre arrosoir au lac."},
+  {k:"?", t:"Un sanctuaire de cactus : cueillez 1D6 morceaux de cactus sans matériel (immunité à la chaleur pour 2 hexagones). Arrosez pour récolter à nouveau.", act:"d6"}]});
+def("cre_scarabee", {title:"Scarabée du désert", page:37, die:"card", mode:"suit", e:[
+  {k:"?", t:"Un Scarabée paisible (Âme 4) : nourrissez-le d’un pétale de Sauriflore pour prendre une épine. Sans protection : −1 Attribut."},
+  {k:"?", t:"Un Scarabée agressif (Âme 4) : il vous attaque. Fuir ou combattre.", foe:{n:"Scarabée agressif", ame:4}},
+  {k:"?", t:"Un Scarabée retourné (Âme 4) : test de Courage pour l’aider. Succès : +1 Honneur et une épine offerte (protection nécessaire)."}]});
+
+def("enc_jardins", {title:"Rencontres · Jardins titanesques", page:39, note:"La page 39 n’a pas pu être lue : ajoutez les rencontres manquantes avec « Autre résultat ».", e:[
+  {k:"?", t:"Une baleine luxuriante (p. 40).", act:"baleine", mark:"Créature"},
+  {k:"?", t:"Un jardin de Laréons (p. 41) : tirez une carte pour la couleur. Le jour, récoltez 1D6 pétales sans équipement.", sub:"cre_lareon", mark:"Jardin"}]});
+def("cre_lareon", {title:"Couleur des Laréons", page:41, die:"card", mode:"suit", e:[{k:"?", t:"Les Laréons sont rouges."},{k:"?", t:"Les Laréons sont jaunes."}]});
+def("col_baleine", {title:"Sur le dos d’une baleine luxuriante", page:40, check:false, e:[
+  {k:"1", t:"Un jardin de Laréons.", sub:"cre_lareon"}, {k:"2", t:"Une bourse de 100 pièces.", coins:100},
+  {k:"3", t:"Un coffre de 1000 pièces.", coins:1000}, {k:"4", t:"Une résidence : découvrez qui habite ici (p. 57).", act:"habitant"},
+  {k:"5", t:"Une Ruine (p. 63).", act:"ruine"}, {k:"6", t:"Un trésor épique : choisissez n’importe quel objet du jeu."}]});
+
+def("col_foret", {title:"Collecte · Forêt des Ombres", page:18, check:false, e:[
+  {k:"1", t:"Une torche.", items:[["Torche",1]]}, {k:"2", t:"2 Racines.", items:[["Racines",2]]}, {k:"3", t:"3 Bois.", items:[["Bois",3]]},
+  {k:"4", t:"3 Feuilles.", items:[["Feuilles",3]]}, {k:"5", t:"2 Fruits.", items:[["Fruits",2]]}, {k:"6", t:"L’un des choix ci-dessus.", choice:true}]});
+def("col_mer", {title:"Collecte · Mer champêtre", page:30, check:false, e:[
+  {k:"1", t:"10 pièces.", coins:10}, {k:"2", t:"2 Pommes de terre.", items:[["Pommes de terre",2]]}, {k:"3", t:"2 Champignons communs.", items:[["Champignon commun",2]]},
+  {k:"4", t:"2 Maïs.", items:[["Maïs",2]]}, {k:"5", t:"2 Riz.", items:[["Riz",2]]}, {k:"6", t:"L’un des choix ci-dessus.", choice:true}]});
+def("col_desert", {title:"Collecte · Désert silencieux", page:34, check:false, e:[
+  {k:"1", t:"10 pièces.", coins:10}, {k:"2", t:"2 Charbon.", items:[["Charbon",2]]}, {k:"3", t:"2 Fer.", items:[["Fer",2]]},
+  {k:"4", t:"2 Cuivre.", items:[["Cuivre",2]]}, {k:"5", t:"1 Or.", items:[["Or",1]]}, {k:"6", t:"L’un des choix ci-dessus.", choice:true}]});
+
+/* Villages */
+def("etab", {title:"Établissement", page:43, die:"card", mode:"value", check:false, e:[
+  {k:"As", t:"Oratoire (p. 44) : échangez 5 points d’Honneur contre +1 au maximum d’un Attribut."},
+  {k:"2", t:"Boutique de potions (p. 45)."}, {k:"3", t:"Boutique d’équipement (p. 46)."}, {k:"4", t:"Boutique de vêtements (p. 47)."},
+  {k:"5", t:"Taverne (p. 48)."}, {k:"6", t:"Bureau de cartographie (p. 49)."}, {k:"7", t:"Auberge (p. 50)."},
+  {k:"8", t:"Agence de missions (p. 51)."}, {k:"9", t:"Gare (p. 54)."}, {k:"10", t:"Ruines (p. 63)."},
+  {k:"V,D,R", t:"Particularité du village.", sub:"village_trait", same:true}]});
+def("etab_taille", {title:"Taille de l’établissement", page:43, die:"card", mode:"suit", e:[
+  {k:"?", t:"Grand (Oratoire permanent, Gare en activité)."},
+  {k:"?", t:"Petit (Oratoire éphémère, Gare à l’abandon)."}]});
+def("village_trait", {title:"Particularité du village", page:43, die:"card", mode:"valuecolor", e:[
+  {k:"V rouge", t:"Ville : tirez 3 cartes d’établissements de plus (défaussez Valets, Dames et Rois)."},
+  {k:"D rouge", t:"Fortifié : il faut au moins 1 point d’Honneur pour entrer."},
+  {k:"?", t:"Abandonné : les établissements ne fonctionnent pas tant que personne ne reconstruit le village."},
+  {k:"?", t:"Merveille : décrivez-le et gagnez 2 points d’Inspiration."},
+  {k:"?", t:"Luxuriant : un point d’eau et un jardin ; utilisez la table de collecte du biome sans équipement."},
+  {k:"?", t:"Nomade : en revenant, faites un test de Courage. Échec : le village est parti."}]});
+
+/* Habitants */
+def("peuple", {title:"Peuple de l’habitant", page:57, check:false, e:[
+  {k:"1-2", t:"Bruja"}, {k:"3-4", t:"Cucurbitus"}, {k:"5", t:"Kiore"}, {k:"6", t:"Mousseron"}]});
+def("age", {title:"Âge de l’habitant", page:57, die:"card", mode:"suit", e:[
+  {k:"?", t:"Enfant"}, {k:"?", t:"Adolescent"}, {k:"?", t:"Adulte"}, {k:"?", t:"Ancien"}]});
+def("perso", {title:"Personnalité", page:57, die:"card", mode:"value", check:false, e:[
+  ["As","Enthousiaste"],["2","Poétique"],["3","Sarcastique"],["4","Charismatique"],["5","Grincheux"],["6","Curieux"],["7","Amical"],
+  ["8","Embarrassé"],["9","Hâtif"],["10","Rêveur"],["V","Tranquille"],["D","Joyeux"],["R","Triste"]].map(([k,t])=>({k,t}))});
+def("accroche", {title:"Accroche", page:57, die:"card", mode:"value", e:[
+  {k:"As", t:"Il pleure une perte récente (un animal, un ami). Une discussion ou une écoute lui ferait du bien."},
+  {k:"2", t:"Il cherche quelque chose qu’on ne trouve pas ici, mais il a peur de l’inconnu. Il y a sans doute une histoire derrière."},
+  {k:"3", t:"Il rêve de voyager vers un autre village. Accompagnez-le pour découvrir ses motivations."},
+  {k:"4", t:"Il est très malade, seul, et n’a plus beaucoup de temps. Une conversation lui réchaufferait le cœur. Pour le retrouver plus tard : test de Courage."},
+  {k:"5", t:"Il cherche l’amitié, peut-être l’amour. Aidez-le à trouver quelqu’un qui cherche la même chose."},
+  {k:"6", t:"Il se languit d’un être cher et cherche un objet très spécial qui lui rappelle cette personne. Quel objet ?"},
+  {k:"7", t:"Un cartographe sur le départ vous offre une carte : 1D6, 1-3 carte de localisation, 4-6 carte de biome (p. 49)."},
+  {k:"8", t:"Un peintre en quête d’inspiration : avez-vous un croquis ou un paysage à lui décrire ?"},
+  {k:"9", t:"Il a entendu des rumeurs sur les Ruines et veut en savoir plus."},
+  {k:"10", t:"Il prononce un nom en errant dans le village. De qui s’agit-il ? Que s’est-il passé ?"},
+  {k:"V", t:"Il achète des objets d’ailleurs : 100 pièces par objet digne d’intérêt."},
+  {k:"D", t:"Il ressemble à quelqu’un que vous avez déjà rencontré. Est-ce une impression ?"},
+  {k:"R", t:"Un bâtisseur : avec 3 bois et 3 fers, ou 1000 pièces, il construit l’établissement de votre choix ici."}]});
+
+def("oracle", {title:"Oracle (question fermée)", page:59, e:[
+  {k:"1", t:"Non, et… — cela pose un problème."}, {k:"2", t:"Non. — répond par la négative."},
+  {k:"3", t:"Non, mais… — nouveau sujet ou complication."}, {k:"4", t:"Oui, mais… — demande quelque chose ou complication."},
+  {k:"5", t:"Oui. — répond positivement."}, {k:"6", t:"Oui, et… — offre quelque chose, une opportunité."}]});
+def("tonalite", {title:"Tonalité de la réponse", page:59, die:"card", mode:"value", check:false, e:[
+  ["As","Humour, blagues"],["2","Défi"],["3","Se faire des amis"],["4","Dilemme"],["5","Explication"],["6","Moquerie"],["7","Émet une opinion"],
+  ["8","Demande un avis"],["9","Question"],["10","Demande de l’aide"],["V","Mensonge"],["D","Souvenir"],["R","Malaise"]].map(([k,t])=>({k,t}))});
+def("sujet", {title:"Sujet de conversation", page:59, die:"card", mode:"value", check:false, e:[
+  ["As","Les Brujas"],["2","Les Cucurbitus"],["3","Les Kiores"],["4","Les Mousserons"],["5","Le passé"],["6","Les créatures (choisissez-en une)"],
+  ["7","Les biomes (choisissez-en un)"],["8","Les champignons"],["9","Les Ruines"],["10","Les Pizis"],["V","Le monde, l’Âme"],["D","Votre voyage, vous"],["R","L’habitant lui-même"]].map(([k,t])=>({k,t}))});
+
+/* Missions */
+def("mission", {title:"Missions (agence)", page:52, die:"d66", e:[
+  ["11","Collecter les ingrédients de n’importe quelle potion Bruja. Récompense aléatoire."],
+  ["12","Apporter un plat de ce village au village le plus proche. Récompense aléatoire."],
+  ["13","Rassembler les ingrédients d’un plat qui n’est pas vendu ici. Récompense aléatoire."],
+  ["14","Apporter le plat d’un autre village (pas vendu ici). Récompense aléatoire."],
+  ["15","Apporter une potion d’un autre village (pas vendue ici). Récompense aléatoire."],
+  ["16","Apporter 1 objet de chacun des 6 biomes. Récompense aléatoire."],
+  ["21","Trouver l’emplacement (et si possible le nom) des 3 villages les plus proches. Récompense aléatoire."],
+  ["22","Trouver les 3 villages les plus proches habités par le même peuple que celui-ci. Récompense aléatoire."],
+  ["23","Apporter 1 champignon du chapeau d’un Bolet Titan. Récompense : 1 Tenue fongique."],
+  ["24","Indiquer quels biomes bordent celui où vous êtes. Récompense aléatoire."],
+  ["25","Amener un Sauriflore dans ce village. Récompense aléatoire."],
+  ["26","Apporter 2 laréons de couleurs différentes. Récompense : 1 Décoction florale."],
+  ["31","Apporter 3 cactus. Récompense : 1 Rafraîchissement pétillant."],
+  ["32","Trouver un village fantôme. Récompense : il redevient habité (tirez 5 cartes)."],
+  ["33","Raconter l’histoire de 3 habitants venus d’ailleurs. Récompense aléatoire."],
+  ["34","Apporter 3 minerais. Récompense aléatoire."],
+  ["35","Ouvrir une nouvelle taverne : les ingrédients d’un plat non vendu ici. Récompense : une taverne ici, ou récompense aléatoire."],
+  ["36","Ouvrir une boutique de potions : les ingrédients d’une potion non vendue ici. Récompense : une boutique de potions ici, ou récompense aléatoire."],
+  ["41","Dessiner 3 paysages d’autres biomes. Récompense aléatoire."],
+  ["42","Un habitant veut visiter un tas d’ossements géants. Récompense aléatoire."],
+  ["43","Un habitant veut les 6 plats Bruja. Récompense aléatoire."],
+  ["44","Un habitant veut les 6 plats Cucurbitus. Récompense aléatoire."],
+  ["45","Un habitant aimerait entendre une histoire de Mousseron. Récompense aléatoire."],
+  ["46","Apporter 1 or à la banque. Récompense aléatoire."],
+  ["51","Amener ici un habitant d’un autre village. Récompense : ajoutez l’établissement de votre choix."],
+  ["52","Un maçon veut 3 bois, 3 fers et 3 cuivres. Récompense : ajoutez l’établissement de votre choix."],
+  ["53","Un habitant cherche quelqu’un pour voyager en train avec lui. Récompense aléatoire."],
+  ["54","Enterrer les cendres d’un être cher au sommet d’une baleine luxuriante. Récompense : 10 points d’Honneur."],
+  ["55","Un habitant a besoin d’un arrosoir. Récompense : 5 points d’Honneur."],
+  ["56","Un habitant veut voler : trouvez-lui une oie céleste. Récompense aléatoire."],
+  ["61","Le corbeau d’un villageois est malade : apportez un sirop gargarisant. Récompense aléatoire."],
+  ["62","Aider un habitant à écrire une lettre à un être cher. Récompense aléatoire."],
+  ["63","Un habitant veut les 6 potions Bruja. Récompense aléatoire."],
+  ["64","Donner un nom au guépard apprivoisé du village. Récompense aléatoire."],
+  ["65","La carte complète d’une région (une feuille entière). Récompense : 100 × Courage en pièces."],
+  ["66","C’est l’anniversaire du guichetier endormi : fêtez-le !"]].map(([k,t])=>({k,t}))});
+def("recompense", {title:"Récompense aléatoire", page:51, check:false, e:[
+  {k:"1", t:"+1 Honneur et 100 pièces.", hon:1, coins:100}, {k:"2", t:"+1 Honneur et 200 pièces.", hon:1, coins:200},
+  {k:"3", t:"+2 Honneur et 300 pièces.", hon:2, coins:300}, {k:"4", t:"+2 Honneur et 400 pièces.", hon:2, coins:400},
+  {k:"5", t:"+3 Honneur et 500 pièces.", hon:3, coins:500}, {k:"6", t:"N’importe quel objet du jeu."}]});
+
+/* Ruines */
+def("ruine_creature", {title:"Créature de la Ruine", page:64, e:[
+  {k:"?", t:"Araignée mécanique (Âme 1, Attaque 1).", foe:{n:"Araignée mécanique", ame:1, atk:1}},
+  {k:"?", t:"Baudroie ionique (Âme 2, Attaque 2).", foe:{n:"Baudroie ionique", ame:2, atk:2}},
+  {k:"?", t:"Golem à piques (Âme 3, Attaque 3).", foe:{n:"Golem à piques", ame:3, atk:3}}]});
+def("ruine_env", {title:"Environnement de la Ruine", page:64, e:[
+  {k:"?", t:"Immense et obscure : utilisez une torche en entrant, sinon perdez 1 point d’Âme."},
+  {k:"?", t:"Un écran des langues anciennes (p. 66).", act:"ecran"},
+  {k:"?", t:"La créature est désactivée et ne vous attaque pas. Il y a aussi un écran des langues anciennes (p. 66).", act:"ecran"}]});
+def("ruine_tresor", {title:"Trésor de la Ruine", page:64, e:[
+  {k:"?", t:"+1 point d’Honneur et 300 pièces.", hon:1, coins:300},
+  {k:"?", t:"+3 points d’Honneur et 500 pièces.", hon:3, coins:500},
+  {k:"?", t:"+5 points d’Honneur et 1000 pièces.", hon:5, coins:1000}]});
+const MOTS = ["Monde","Aller","Loin","Vieux","Être","Temps","Fin","Nourriture","Plantes","Danger","Jour","Nuit","Énergie","Espoir","Personnes","Animaux","Conscience","Évasion",
+  "Ville","Horloge","La vie","L’eau","Protection","Sous terre","Géant","Grottes","Protecteur","Faim","Abri","Survie","Peur","Ordinateurs","Voyageur","Scientifique","Guerre","Histoire"];
+def("langues", {title:"Écran des langues anciennes", page:66, die:"d66", check:false, e:MOTS.map((t,i)=>({k:String(Math.floor(i/6)+1)+String(i%6+1), t}))});
+
+/* Salle des Souvenirs */
+def("bataille", {title:"Succès requis (bataille des souvenirs)", page:70, die:"card", mode:"suit", e:[
+  {k:"?", t:"1 Succès", need:1}, {k:"?", t:"2 Succès", need:2}, {k:"?", t:"3 Succès", need:3}, {k:"?", t:"4 Succès", need:4}]});
+def("bataille_perte", {title:"Conséquence d’une bataille perdue", page:70, die:"card", mode:"suit", e:[
+  {k:"?", t:"Supprimez un village de votre carte et effacez du journal tous les souvenirs qui lui sont liés, même ses habitants."},
+  {k:"?", t:"Perdez 3 points d’Attributs au total, répartis comme vous le souhaitez."},
+  {k:"?", t:"Perdez 1 point d’Honneur.", hon:-1},
+  {k:"?", t:"Perdez 1 point d’Âme.", ame:-1}]});
+
+const TABLE_GROUPS = [
+  ["Exploration", ["biome","enc_foret","enc_plaine","enc_jungle","enc_mer","enc_desert","enc_jardins"]],
+  ["Créatures et lieux", ["cre_foret","cre_herissin","cre_bolet","cre_mer","cre_oasis","cre_scarabee","cre_lareon"]],
+  ["Collecte", ["col_foret","col_mer","col_desert","col_bolet","col_baleine"]],
+  ["Villages et habitants", ["etab","etab_taille","village_trait","peuple","age","perso","accroche"]],
+  ["Conversations", ["oracle","tonalite","sujet"]],
+  ["Missions", ["mission","recompense"]],
+  ["Ruines et souvenirs", ["ruine_creature","ruine_env","ruine_tresor","langues","bataille","bataille_perte"]]
+];
+
+/* Encyclopédie */
+const OUTILS = [
+  {n:"Hache", pe:"Bruja", prix:250, dur:10, comp:"1 bois, 2 fers", eff:"Collecte au choix dans les Forêts des Ombres."},
+  {n:"Épée", pe:"Bruja", prix:300, dur:5, comp:"3 cactus, 1 cuivre", eff:"Fuir une bataille sans test de Courage."},
+  {n:"Gants thermiques", pe:"Bruja", prix:300, dur:5, comp:"3 cactus, 1 cuivre", eff:"Annule les dégâts au contact des scarabées du désert."},
+  {n:"Machine à vapeur", pe:"Bruja", prix:500, dur:1, comp:"1 Âme en bouteille, 1 fer", eff:"Réactive pour toujours une gare à l’abandon."},
+  {n:"Tenue fongique", pe:"Bruja", prix:300, dur:1, comp:"1 or, 1 fer, 1 baume de champignon", eff:"Protège des spores et des champignons vénéneux pendant 1 jour et 1 nuit."},
+  {n:"Torche", pe:"Bruja", prix:10, dur:1, comp:"1 bois, 1 charbon", eff:"Annule l’obscurité (toute l’exploration d’une Ruine)."},
+  {n:"Ciseaux de jardinage", pe:"Cucurbitus", prix:250, dur:10, comp:"2 bois, 2 fers", eff:"Collecte au choix dans les Mers champêtres."},
+  {n:"Arrosoir", pe:"Cucurbitus", prix:500, dur:0, comp:"1 fer, 1 épine de scarabée", eff:"6 unités d’eau ; 1 unité par arrosage. Se remplit dans toute étendue d’eau."},
+  {n:"Bouclier", pe:"Cucurbitus", prix:750, dur:5, comp:"1 bois, 1 cuivre, 2 fers", eff:"Test de Courage : lancez un dé de plus et ignorez le plus élevé."},
+  {n:"Matériel d’escalade", pe:"Cucurbitus", prix:100, dur:5, comp:"1 bois, 1 fer", eff:"Pour grimper : lancez 2D6 et gardez le dé de votre choix."},
+  {n:"Pioche", pe:"Cucurbitus", prix:250, dur:10, comp:"2 bois, 1 fer", eff:"Collecte au choix dans les Déserts silencieux."},
+  {n:"Pince à oursin", pe:"Cucurbitus", prix:1000, dur:5, comp:"2 épines de scarabée, 1 bois", eff:"Récolter le lichen des Hérissins."}
+];
+const VETEMENTS = [
+  {n:"Chapeau Bruja", pe:"Bruja", prix:500}, {n:"Pantalon Bruja", pe:"Bruja", prix:500}, {n:"Pull-over Bruja", pe:"Bruja", prix:500},
+  {n:"Salopette Cucurbitus", pe:"Cucurbitus", prix:500}, {n:"Chapeau de paille", pe:"Cucurbitus", prix:500}, {n:"Bottes de jardinage", pe:"Cucurbitus", prix:500},
+  {n:"Lunettes Kiore", pe:"Kiore", prix:null, note:"3 paris gagnés"}, {n:"Foulard Kiore", pe:"Kiore", prix:null, note:"5 paris gagnés"}, {n:"Tunique Kiore", pe:"Kiore", prix:null, note:"7 paris gagnés"}
+];
+const ENSEMBLES = {Bruja:"Ensemble complet : fabriquer des potions n’importe où (avec les ingrédients).",
+  Cucurbitus:"Ensemble complet : double la quantité d’objets collectés ou extraits.",
+  Kiore:"Ensemble complet : protège de toute chaleur et brûlure."};
+const PLATS = [
+  {n:"Biscuits aux fruits", pe:"Bruja", prix:80, eff:"+1 Attribut au choix et +1 Âme", ing:"1 maïs, 1 fruit"},
+  {n:"Gâteau aux pignons de pin", pe:"Bruja", prix:20, eff:"+2 Endurance", ing:"1 feuille, 1 racine"},
+  {n:"Soupe aux herbes", pe:"Bruja", prix:70, eff:"+1 Âme et +1 Courage", ing:"4 feuilles, 1 eau"},
+  {n:"Mijoté de tiges", pe:"Bruja", prix:30, eff:"+2 Endurance", ing:"2 bois, 1 eau"},
+  {n:"Mille-feuille à la vapeur", pe:"Bruja", prix:80, eff:"+2 dans le même Attribut", ing:"1 feuille, 1 eau"},
+  {n:"Thé de racines", pe:"Bruja", prix:100, eff:"+3 dans le même Attribut", ing:"1 eau, 2 racines"},
+  {n:"Champignon à l’étouffée", pe:"Cucurbitus", prix:100, eff:"+2 dans le même Attribut", ing:"1 champignon commun, 1 eau"},
+  {n:"Risotto aux truffes", pe:"Cucurbitus", prix:90, eff:"+3 Âme", ing:"1 champignon commun, 1 riz"},
+  {n:"Soupe du chapelier", pe:"Cucurbitus", prix:70, eff:"+1 Attribut au choix et +1 Endurance", ing:"1 champignon commun, 1 eau, 1 pomme de terre"},
+  {n:"Tourte aux champignons", pe:"Cucurbitus", prix:80, eff:"+1 Attribut au choix et +1 Âme", ing:"1 champignon commun, 2 maïs"},
+  {n:"Pain aux champignons séchés", pe:"Cucurbitus", prix:70, eff:"+1 Courage et +1 Endurance", ing:"1 champignon commun, 2 pommes de terre"},
+  {n:"Bière de mycélium", pe:"Cucurbitus", prix:120, eff:"+3 dans le même Attribut", ing:"1 champignon commun, 1 maïs, 2 eaux"}
+];
+const POTIONS = [
+  {n:"Âme en bouteille", pe:"Bruja", eff:"+1 Âme ; sert aussi à fabriquer une Machine à vapeur ou à payer un trajet depuis une gare à l’abandon."},
+  {n:"Infusion pacifique", pe:"Bruja", eff:"Calme les créatures hostiles, sauf dans les Ruines."},
+  {n:"Mixture confusante", pe:"Bruja", eff:"Fuyez sans faire de test de Courage."},
+  {n:"Philtre de chance", pe:"Bruja", eff:"Relancez un dé ou retirez une carte."},
+  {n:"Potion de téléportation", pe:"Bruja", eff:"Vous téléporte dans un hexagone déjà exploré."},
+  {n:"Baume de champignon", pe:"Cucurbitus", eff:"Guérit les dégâts des champignons vénéneux."},
+  {n:"Sirop gargarisant", pe:"Cucurbitus", eff:"+1 Attribut au choix."},
+  {n:"Stimulant hardi", pe:"Cucurbitus", eff:"Diminue de 1 le résultat d’un test de Courage."},
+  {n:"Thé transparent", pe:"?", eff:"Vous rend invisible pendant 1 jour et 1 nuit."},
+  {n:"Tonique floral", pe:"?", eff:"Change la couleur d’un Sauriflore."},
+  {n:"Tonique fulgurant", pe:"?", eff:"Double votre Endurance pendant 1 jour et 1 nuit."},
+  {n:"Rafraîchissement pétillant", pe:"?", eff:"Immunise contre la chaleur des Déserts pendant 1 jour."},
+  {n:"Décoction florale", pe:"?", eff:"Voir p. 45."}
+];
+const RESSOURCES = ["Nourriture","Bois","Racines","Feuilles","Fruits","Pommes de terre","Maïs","Riz","Champignon commun","Champignon de l’âme","Champignon de Courage","Champignon d’Endurance",
+  "Charbon","Fer","Cuivre","Or","Cactus","Épine de scarabée","Lichen des Hérissins","Pétale de Sauriflore","Laréon rouge","Laréon jaune","Pétale d’or","Eau"];
+const CREATURES = [
+  {n:"Arbre guerrier", ame:4}, {n:"Hérissin agressif", ame:3}, {n:"Scarabée agressif", ame:4}, {n:"Baleine luxuriante agressive", ame:null},
+  {n:"Araignée mécanique", ame:1, atk:1}, {n:"Baudroie ionique", ame:2, atk:2}, {n:"Golem à piques", ame:3, atk:3}];
+const ARCHES = {
+  Guerrier:{obj:"L’épée", pow:"Quand vous le souhaitez, fuyez une bataille sans lancer de dés ni risquer de dégâts."},
+  "Pèlerin":{obj:"Le bâton", pow:"Vous n’avez besoin de manger qu’une fois par jour, à la fin de chaque nuit."},
+  Troubadour:{obj:"La mandoline", pow:"En arrivant dans un village pour la première fois, jouez une chanson et gagnez 1D6 × 10 pièces."}
+};
+
+/* ================== État et sauvegarde ================== */
+const KEY = "carnet-protecteur-v1";
+const COLS = 9, ROWS = 25, START = "E13";
+let S = null;
+let UI = {tab:"voyage", sel:null, sheet:null, last:null, test:null, fight:null, paint:null, cloud:"local", edit:{}, toast:null};
+
+function freshState(name, arch){
+  return {v:1, savedAt:Date.now(),
+    hero:{name:name||"Protecteur", arch, ame:4, ameMax:4, cou:3, couMax:3, end:2, endMax:2, hon:0, insp:0, pieces:100, faim:false, bonusCou:0},
+    opts:{noHunger:false, softDeath:false},
+    inv:[{id:uid(), n:"Nourriture", q:4}],
+    spells:[], notes:"",
+    clock:{day:1, night:false, i:0, mealDue:false},
+    collect:{day:1, count:0},
+    regions:[{name:"Région 1", hexes:{[START]:{b:"noyau", marks:[], note:"Le Noyau : votre lieu de naissance."}}}],
+    cur:{reg:0, key:START},
+    deck:shuffle(newDeck()), drawn:[],
+    journal:[{id:uid(), at:Date.now(), day:1, night:false, hex:START, text:"Je m’éveille dans le Noyau. Sur un vieux journal, mon Prédécesseur me demande de prendre soin de ce monde."}],
+    mem:[], missions:[], learn:{}, ok:{}, extra:{}, salle:false
+  };
+}
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function localLoad(){ try{ const t = localStorage.getItem(KEY); return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+function localSave(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+let saveTimer = null;
+function save(){ if(!S) return; S.savedAt = Date.now(); localSave(); clearTimeout(saveTimer); saveTimer = setTimeout(pushCloud, 1500); }
+
+/* Sauvegarde en ligne : un document privé par personne, data/users/<id>/partie */
+let cloudDoc = null, cloudBusy = false, cloudAgain = false;
+async function initCloud(){
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if(!db || !user) return;
+    const id = await user.id(); if(!id) return;
+    cloudDoc = db.doc("data/users/" + id + "/partie");
+    const snap = await cloudDoc.get();
+    UI.cloud = "ok";
+    if(snap.exists){
+      const d = snap.data();
+      if(d && typeof d.json === "string"){
+        const remote = JSON.parse(d.json);
+        if(!S || (remote.savedAt||0) > (S.savedAt||0)){ S = remote; localSave(); toast("Partie récupérée depuis votre sauvegarde en ligne"); }
+        else if((S.savedAt||0) > (remote.savedAt||0)){ pushCloud(); }
+      }
+    } else if(S){ pushCloud(); }
+    render();
+  }catch(e){ UI.cloud = "local"; renderStatus(); }
+}
+async function pushCloud(){
+  if(!cloudDoc || !S) return;
+  if(cloudBusy){ cloudAgain = true; return; }
+  cloudBusy = true;
+  try{ await cloudDoc.set({json: JSON.stringify(S), savedAt: S.savedAt}); UI.cloud = "ok"; }
+  catch(e){ UI.cloud = (e && e.code === "invalid_argument") ? "trop" : "local"; }
+  cloudBusy = false; renderStatus();
+  if(cloudAgain){ cloudAgain = false; pushCloud(); }
+}
+
+/* ================== Hasard ================== */
+const d6 = () => 1 + Math.floor(Math.random()*6);
+const VALUES = ["As","2","3","4","5","6","7","8","9","10","V","D","R"];
+const SUITS = ["♠","♥","♦","♣"];
+function newDeck(){ const d=[]; for(const s of SUITS) for(const v of VALUES) d.push(v+s); return d; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function parseCard(c){ const s=c.slice(-1); return {v:c.slice(0,-1), s, red:(s==="♥"||s==="♦")}; }
+function draw(){
+  if(!S.deck.length){ S.deck = shuffle(newDeck()); S.drawn = []; toast("Paquet épuisé : je le mélange à nouveau"); }
+  const c = S.deck.pop(); S.drawn.push(c); return c;
+}
+function cardHTML(c){ const p=parseCard(c); return `<div class="pcard ${p.red?"red":""}" aria-label="${p.v} de ${suitName(p.s)}"><span>${p.v}${p.s}</span><span class="mid">${p.s}</span><span class="bot">${p.v}${p.s}</span></div>`; }
+function suitName(s){ return {"♠":"pique","♥":"cœur","♦":"carreau","♣":"trèfle"}[s]; }
+
+/* ================== Tables ================== */
+function entriesOf(id){ const t=T[id]; return t.e.concat((S.extra[id]||[]).map(t=>({k:"?", t, custom:true}))); }
+function expandK(k, die){
+  if(!k || k==="?") return [];
+  const out=[];
+  for(const part of k.split(",").map(x=>x.trim())){
+    if(die!=="card" && /^\d+-\d+$/.test(part)){ const [a,b]=part.split("-").map(Number); for(let n=a;n<=b;n++) out.push(String(n)); }
+    else out.push(part);
+  }
+  return out;
+}
+function keyFor(t, roll){
+  if(t.die!=="card") return String(roll);
+  const p=parseCard(roll);
+  if(t.mode==="suit") return p.s;
+  if(t.mode==="valuecolor") return p.v+" "+(p.red?"rouge":"noir");
+  return p.v;
+}
+function lookup(id, key){
+  const learned=(S.learn[id]||{})[key];
+  const es=entriesOf(id);
+  if(learned!=null && es[learned]) return {i:learned, learned:true};
+  const i=es.findIndex(e=>expandK(e.k, T[id].die).includes(key));
+  return i>=0 ? {i, learned:false} : null;
+}
+function rollFor(id){
+  const t=T[id];
+  if(t.die==="d6") return d6();
+  if(t.die==="d66") return String(d6())+String(d6());
+  return draw();
+}
+/* Lance une table ; renvoie un objet résultat (avec sous-tables résolues). */
+function rollTable(id, forced){
+  const t=T[id]; const roll = forced!=null ? forced : rollFor(id);
+  const key=keyFor(t, roll); const hit=lookup(id, key);
+  const es=entriesOf(id);
+  const res={id, roll, key, i: hit?hit.i:null, entry: hit?es[hit.i]:null, check: hit ? needsCheck(id, key, hit) : false, sub:null};
+  if(res.entry && res.entry.sub) res.sub = rollTable(res.entry.sub, res.entry.same ? roll : undefined);
+  return res;
+}
+function needsCheck(id, key, hit){
+  if(hit.learned) return false;
+  if((S.ok[id]||{})[key]) return false;
+  return T[id].check !== false;
+}
+function teach(id, key, i){ (S.learn[id] = S.learn[id]||{})[key] = i; (S.ok[id] = S.ok[id]||{})[key] = true; save(); }
+function confirmKey(id, key){ (S.ok[id] = S.ok[id]||{})[key] = true; save(); }
+function addExtra(id, text){ (S.extra[id] = S.extra[id]||[]).push(text); return T[id].e.length + S.extra[id].length - 1; }
+function rollLabel(t, roll){
+  if(t.die==="card") return roll;
+  if(t.die==="d66") return roll[0]+"."+roll[1];
+  return "Dé : "+roll;
+}
+function keyLabel(t, key){
+  if(t.die!=="card") return t.die==="d66" ? "le résultat "+key[0]+"."+key[1] : "la face "+key;
+  if(t.mode==="suit") return "l’enseigne "+key+" ("+suitName(key)+")";
+  if(t.mode==="valuecolor") return "la carte "+key;
+  return "la valeur "+key;
+}
+
+/* Rendu d'un résultat de table, avec apprentissage des correspondances */
+function resultHTML(r, path){
+  const t=T[r.id];
+  let h=`<div class="result ${r.entry?"":"unknown"}" data-path="${path}">`;
+  h+=`<div class="row" style="justify-content:space-between"><span class="eyebrow">${esc(t.title)} · p. ${t.page}</span>${t.die==="card"?cardHTML(r.roll).replace('class="pcard','style="width:44px;height:62px;font-size:.8rem" class="pcard'):`<span class="k">${esc(rollLabel(t,r.roll))}</span>`}</div>`;
+  if(r.entry){
+    h+=`<p>${esc(r.entry.t)}</p>`;
+    if(r.check) h+=`<p class="small muted">Correspondance supposée pour ${esc(keyLabel(t,r.key))} : vérifiez dans le livre. <button class="link" data-act="okkey" data-path="${path}">C’est juste</button> · <button class="link" data-act="fix" data-path="${path}">Corriger</button></p>`;
+    else h+=`<p class="small"><button class="link" data-act="fix" data-path="${path}">Ce n’est pas le bon résultat ?</button></p>`;
+    h+=actionsFor(r.entry, path);
+  } else {
+    h+=`<p><b>Je ne connais pas encore ${esc(keyLabel(t,r.key))}.</b> Regardez page ${t.page} et touchez le résultat correspondant. L’application s’en souviendra.</p>`;
+    h+=chooserHTML(r, path);
+  }
+  if(UI.fixing===path && r.entry) h+=chooserHTML(r, path);
+  if(r.sub) h+=resultHTML(r.sub, path+".sub");
+  h+=`</div>`;
+  return h;
+}
+function chooserHTML(r, path){
+  const es=entriesOf(r.id);
+  return `<div class="choose">${es.map((e,i)=>`<button class="btn sm" data-act="teach" data-path="${path}" data-i="${i}">${esc(e.t)}</button>`).join("")}
+  <div class="row"><input type="text" id="other-${path.replace(/\./g,"-")}" placeholder="Autre résultat (recopiez-le du livre)" style="flex:1"><button class="btn sm" data-act="teachnew" data-path="${path}">Ajouter</button></div></div>`;
+}
+function actionsFor(e, path){
+  const b=[];
+  if(e.items) b.push(`<button class="btn sm primary" data-act="gain" data-path="${path}">Ajouter à l’inventaire</button>`);
+  if(e.coins||e.hon) b.push(`<button class="btn sm primary" data-act="gain" data-path="${path}">Encaisser</button>`);
+  if(e.choice) b.push(`<button class="btn sm primary" data-act="choice" data-path="${path}">Choisir un objet</button>`);
+  if(e.foe) b.push(`<button class="btn sm lantern" data-act="fightfrom" data-path="${path}">Affronter ou fuir</button>`);
+  if(e.act==="village") b.push(`<button class="btn sm" data-act="go-village">Tirer 5 cartes</button>`);
+  if(e.act==="comptoir") b.push(`<button class="btn sm" data-act="go-comptoir">Définir le comptoir</button>`);
+  if(e.act==="habitant"||e.act==="kiore") b.push(`<button class="btn sm" data-act="go-habitant">Créer l’habitant</button>`);
+  if(e.act==="kiore") b.push(`<button class="btn sm" data-act="go-pari">Parier</button>`);
+  if(e.act==="ruine") b.push(`<button class="btn sm" data-act="go-ruine">Explorer la Ruine</button>`);
+  if(e.act==="ecran") b.push(`<button class="btn sm" data-act="go-ecran">Lire l’écran</button>`);
+  if(e.act==="baleine") b.push(`<button class="btn sm" data-act="go-baleine">Grimper et fouiller</button>`);
+  if(e.act==="bolet") b.push(`<button class="btn sm" data-act="go-bolet">Table du Bolet Titan</button>`);
+  if(e.act==="d6") b.push(`<button class="btn sm" data-act="go-d6">Lancer 1D6</button>`);
+  if(e.mark) b.push(`<button class="btn sm" data-act="markhex" data-mark="${esc(e.mark)}" data-path="${path}">Noter sur la carte</button>`);
+  return b.length?`<div class="row">${b.join("")}</div>`:"";
+}
+function resultText(r){
+  if(!r) return "";
+  const t=T[r.id];
+  let s=t.title+" ("+rollLabel(t,r.roll)+") : "+(r.entry?r.entry.t:"?");
+  if(r.sub) s+="\n  → "+resultText(r.sub);
+  return s;
+}
+function getByPath(path){
+  const parts=path.split(".");
+  let r = UI.results[parts[0]];
+  for(const p of parts.slice(1)){ if(!r) return null; if(p==="sub") r=r.sub; else r=r[p]; }
+  return r;
+}
+
+/* ================== Règles ================== */
+const H = () => S.hero;
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function effCou(){ return clamp(H().cou + (H().bonusCou||0), 0, 5); }
+function slices(){ return Math.max(1, H().end); }
+function setAttr(a, delta){
+  const h=H();
+  if(a==="ame") h.ame = clamp(h.ame+delta, 0, h.ameMax);
+  if(a==="cou") h.cou = clamp(h.cou+delta, 1, h.couMax);
+  if(a==="end"){ h.end = clamp(h.end+delta, 1, h.endMax); S.clock.i = Math.min(S.clock.i, slices()-1); }
+  save();
+}
+/* Test de Courage : lancez 1D6, Succès si ≤ Courage. Faim : un dé de plus, on écarte le plus faible. Bouclier : un dé de plus, on ignore le plus élevé. */
+function courageTest(o={}){
+  const faim = H().faim && !S.opts.noHunger;
+  const n = 1 + (faim?1:0) + (o.shield?1:0);
+  const dice = Array.from({length:n}, d6);
+  const sorted = dice.slice().sort((a,b)=>a-b);
+  let kept;
+  if(faim && o.shield) kept = sorted[1];
+  else if(faim) kept = sorted[sorted.length-1];
+  else if(o.shield) kept = sorted[0];
+  else kept = dice[0];
+  const mod = (o.stim?-1:0);
+  const total = kept + mod;
+  return {dice, kept, mod, total, cou:effCou(), ok: total <= effCou(), faim, shield:!!o.shield, stim:!!o.stim, label:o.label||"Test de Courage"};
+}
+function advance(n=1, why){
+  const c=S.clock; const msgs=[];
+  for(let k=0;k<n;k++){
+    c.i++;
+    if(c.i >= slices()){
+      c.i = 0;
+      const toNight = !c.night;
+      c.night = toNight;
+      if(!toNight) c.day++;
+      if(c.mealDue && !S.opts.noHunger){ H().faim = true; msgs.push("Repas manqué : vous souffrez de la Faim."); }
+      c.mealDue = false;
+      const needMeal = !S.opts.noHunger && !(H().arch==="Pèlerin" && toNight);
+      if(needMeal){ c.mealDue = true; }
+      if(H().bonusCou){ H().bonusCou = 0; msgs.push("Le bonus de Courage de l’eau prend fin."); }
+      msgs.push(toNight ? "La nuit tombe." : "Le jour se lève : jour "+c.day+".");
+    }
+  }
+  if(S.collect.day !== c.day){ S.collect = {day:c.day, count:0}; }
+  save();
+  if(msgs.length) toast(msgs.join(" "));
+}
+function invFind(n){ return S.inv.find(x=>x.n.toLowerCase()===n.toLowerCase()); }
+function invAdd(n, q=1, extra){
+  let it=invFind(n);
+  if(it && !it.dur) it.q += q;
+  else { const tool=OUTILS.find(o=>o.n===n); it={id:uid(), n, q, ...(tool && tool.dur?{dur:tool.dur, durMax:tool.dur}:{}), ...(extra||{})}; S.inv.push(it); }
+  save(); return it;
+}
+function invUsed(){ return S.inv.filter(x=>!x.worn && x.q>0).length; }
+function invCap(){ return H().end*6; }
+function logJ(text){ S.journal.unshift({id:uid(), at:Date.now(), day:S.clock.day, night:S.clock.night, hex:S.cur.key, text}); save(); }
+function gainFrom(e){
+  const out=[];
+  if(e.items) for(const [n,q] of e.items){ const mult = wearsSet("Cucurbitus")?2:1; invAdd(n, q*mult); out.push((q*mult)+" × "+n); }
+  if(e.coins){ H().pieces += e.coins; out.push("+"+e.coins+" pièces"); }
+  if(e.hon){ H().hon += e.hon; out.push((e.hon>0?"+":"")+e.hon+" Honneur"); }
+  if(e.ame){ setAttr("ame", e.ame); out.push(e.ame+" Âme"); }
+  save(); return out.join(", ");
+}
+function wearsSet(pe){ const names=VETEMENTS.filter(v=>v.pe===pe).map(v=>v.n); return names.every(n=>S.inv.some(x=>x.n===n && x.worn)); }
+
+/* ================== Carte ================== */
+const LET="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function hk(c,r){ return LET[c]+(r+1); }
+function parseHK(k){ return {c:LET.indexOf(k[0]), r:parseInt(k.slice(1),10)-1}; }
+function neighbors(k){
+  const {c,r}=parseHK(k); const odd=c%2===1;
+  const d = odd ? [[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]] : [[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];
+  return d.map(([dc,dr])=>[c+dc,r+dr]).filter(([a,b])=>a>=0&&a<COLS&&b>=0&&b<ROWS).map(([a,b])=>hk(a,b));
+}
+function region(){ return S.regions[S.cur.reg]; }
+function hexAt(k){ return region().hexes[k]; }
+function ensureHex(k){ const R=region(); if(!R.hexes[k]) R.hexes[k]={b:null, marks:[], note:""}; return R.hexes[k]; }
+function mapSVG(){
+  const s=20, hh=Math.sqrt(3)*s, pad=4;
+  const W=Math.ceil(pad*2+s*2+(COLS-1)*1.5*s), Hh=Math.ceil(pad*2+hh*ROWS+hh/2);
+  const R=region(); let g="";
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
+    const k=hk(c,r), x=pad+s+c*1.5*s, y=pad+hh/2+r*hh+(c%2?hh/2:0);
+    const pts=[0,60,120,180,240,300].map(a=>{const t=a*Math.PI/180; return (x+s*Math.cos(t)).toFixed(1)+","+(y+s*Math.sin(t)).toFixed(1);}).join(" ");
+    const hx=R.hexes[k]; const b=hx&&hx.b?BIOMES[hx.b]:null;
+    const cls=["hex", b?"filled":"blank", (S.cur.key===k?"here":""), (UI.sel===k?"sel":""), (UI.paint && UI.paint.cands.includes(k)?"paint":"")].join(" ");
+    const mk = hx && hx.marks && hx.marks.length ? (MARKS.find(m=>m[0]===hx.marks[0])||["","•"])[1] : "";
+    g+=`<g class="${cls}" data-hex="${k}" role="button" aria-label="${k}${b?" "+b.n:""}"><polygon points="${pts}" style="${b?`fill:${b.c}`:""}"/>`+
+       `<text x="${x}" y="${y-5}" text-anchor="middle" ${b&&b.tx?`style="fill:${b.tx}"`:""}>${k}</text>`+(mk?`<text class="mark" x="${x}" y="${y+10}" text-anchor="middle" ${b&&b.tx?`style="fill:${b.tx}"`:""}>${mk}</text>`:"")+
+       (S.cur.key===k?`<circle cx="${x}" cy="${y+3}" r="4.5" fill="var(--lantern)" stroke="#fff" stroke-width="1"/>`:"")+`</g>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${Hh}" width="${W*1.25}" height="${Hh*1.25}" role="img" aria-label="Carte hexagonale">${g}</svg>`;
+}
+function clockSVG(){
+  const n=slices(), cx=60, cy=60, R=54, r=28; let g="";
+  const arc=(a0,a1,cls)=>{const p=(a,rad)=>[cx+rad*Math.cos(a*Math.PI/180), cy+rad*Math.sin(a*Math.PI/180)];
+    const [x0,y0]=p(a0,R),[x1,y1]=p(a1,R),[x2,y2]=p(a1,r),[x3,y3]=p(a0,r);
+    return `<path class="seg ${cls}" d="M${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1} L${x2},${y2} A${r},${r} 0 0 0 ${x3},${y3} Z"/>`;};
+  for(let i=0;i<n;i++){ const a0=180+i*180/n, a1=180+(i+1)*180/n; g+=arc(a0,a1,"day"+(!S.clock.night&&S.clock.i===i?" cur":"")); }
+  for(let i=0;i<n;i++){ const a0=i*180/n, a1=(i+1)*180/n; g+=arc(a0,a1,"night"+(S.clock.night&&S.clock.i===i?" cur":"")); }
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="Horloge : ${S.clock.night?"nuit":"jour"}, tranche ${S.clock.i+1} sur ${n}">${g}<text x="60" y="57" text-anchor="middle">Jour</text><text x="60" y="70" text-anchor="middle">Nuit</text></svg>`;
+}
+
+/* ================== Rendu ================== */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const ICONS = {
+  voyage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7z"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  heros:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7.5" r="3.5"/><path d="M4.5 21c1-4.5 4-6.5 7.5-6.5s6.5 2 7.5 6.5"/></svg>',
+  des:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>',
+  tables:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16M4 10h16M4 15h16M4 20h10"/></svg>',
+  journal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h11a2 2 0 0 1 2 2v16H8a2 2 0 0 1-2-2z"/><path d="M6 19a2 2 0 0 1 2-2h11"/><path d="M10 7h6M10 11h5"/></svg>'
+};
+const TABS=[["voyage","Voyage"],["heros","Protecteur"],["des","Dés"],["tables","Tables"],["journal","Journal"]];
+
+function renderTabs(){
+  document.getElementById("tabs").innerHTML = TABS.map(([k,l])=>`<button data-tab="${k}" ${UI.tab===k?'aria-current="page"':""}>${ICONS[k]}<span>${l}</span></button>`).join("");
+}
+function renderStatus(){
+  const el=document.getElementById("status");
+  if(!S){ el.innerHTML=""; return; }
+  const h=H(), c=S.clock;
+  const cloud = UI.cloud==="ok" ? `<span class="chip good" title="Sauvegardé dans votre compte">Sauvegardé</span>` : UI.cloud==="trop" ? `<span class="chip warn">Sauvegarde en ligne pleine</span>` : `<span class="chip" title="Sauvegardé sur cet appareil">Sur cet appareil</span>`;
+  el.innerHTML = `<div class="status-in">
+    <span class="stat"><span class="lbl">Âme</span><b>${h.ame}</b>/${h.ameMax}</span>
+    <span class="stat"><span class="lbl">Courage</span><b>${effCou()}</b>/${h.couMax}${h.bonusCou?"+":""}</span>
+    <span class="stat"><span class="lbl">Endur.</span><b>${h.end}</b>/${h.endMax}</span>
+    <span class="stat"><span class="lbl">Honneur</span><b>${h.hon}</b></span>
+    <span class="stat"><span class="lbl">Insp.</span><b>${h.insp}</b></span>
+    <span class="stat"><span class="lbl">Pièces</span><b>${h.pieces}</b></span>
+    <span class="chip">${c.night?"Nuit":"Jour"} ${c.day} · ${c.i+1}/${slices()}</span>
+    ${h.faim && !S.opts.noHunger?`<span class="chip bad">Faim</span>`:""}
+    ${c.mealDue?`<span class="chip warn">Repas à prendre</span>`:""}
+    ${cloud}</div>`;
+}
+function render(){
+  renderTabs(); renderStatus();
+  const m=document.getElementById("main");
+  if(!S){ m.innerHTML = createHTML(); return; }
+  const f={voyage:voyageHTML, heros:herosHTML, des:desHTML, tables:tablesHTML, journal:journalHTML}[UI.tab];
+  m.innerHTML = deathBanner() + f();
+  renderSheet();
+  if(UI.tab==="voyage" && UI.scrollMap){ UI.scrollMap=false; const here=document.querySelector(".hex.here"); if(here && here.scrollIntoView) here.scrollIntoView({block:"center", inline:"center"}); }
+}
+function deathBanner(){
+  if(H().ame>0) return "";
+  return `<div class="banner bad"><h3>Votre Protecteur est mort</h3>
+  <p class="small">Choix 1 : un nouveau Protecteur d’un autre Archétype naît au Noyau (E13), sans objets ni pièces, mais avec vos souvenirs.<br>Choix 2 : même Archétype ; il renaît au Noyau puis se rend dans un hexagone exploré voisin du lieu de la mort, avec 1 point d’Âme.${S.opts.softDeath?"<br>Mode Histoire : vous pouvez aussi vous réveiller dans l’hexagone sûr le plus proche, avec vos objets et 1 point d’Âme.":""}</p>
+  <div class="row"><button class="btn" data-act="death1">Choix 1</button><button class="btn" data-act="death2">Choix 2</button>${S.opts.softDeath?`<button class="btn" data-act="death3">Se réveiller (mode Histoire)</button>`:""}</div></div>`;
+}
+
+/* --- Création --- */
+function createHTML(){
+  return `<section class="card"><p class="eyebrow">Les Souvenirs du Protecteur · carnet de jeu</p>
+  <p class="hero-title">Vous vous éveillez dans le Noyau.</p>
+  <p class="muted">L’eau sur le sol reflète votre visage et la brise murmure votre nom. Près de la sortie, trois objets vous attendent.</p>
+  <label class="f">Nom du Protecteur<input type="text" id="c-name" placeholder="Votre nom" autocomplete="off"></label>
+  <div class="arch">${Object.entries(ARCHES).map(([k,a],i)=>`<label><input type="radio" name="arch" value="${k}" ${i===0?"checked":""}><span><b>${k}</b> — ${a.obj}<br><span class="small muted">${a.pow}</span></span></label>`).join("")}</div>
+  <p class="small muted">Chaque Archétype commence avec Âme 4, Courage 3, Endurance 2, 100 pièces, 4 nourritures et 0 Honneur. Vous pourrez corriger ces valeurs sur la fiche.</p>
+  <button class="btn primary block" data-act="create">Commencer le voyage</button></section>`;
+}
+
+/* --- Voyage --- */
+function voyageHTML(){
+  const c=S.clock, here=hexAt(S.cur.key)||{}, b=here.b?BIOMES[here.b]:null;
+  let h="";
+  if(c.mealDue) h+=`<div class="banner"><b>Vous franchissez la frontière entre le jour et la nuit : il faut manger.</b>
+    <div class="row">${foodOptions()}<button class="btn sm" data-act="skipmeal">Ne pas manger (Faim)</button></div></div>`;
+  if(UI.paint) h+=`<div class="banner"><b>Délimitez : ${esc(BIOMES[UI.paint.b].n)}</b><span class="small">${UI.paint.left!=null?`Touchez encore ${UI.paint.left} hexagone${UI.paint.left>1?"s":""} adjacent${UI.paint.left>1?"s":""} (en pointillés).`:`Coloriez le nombre d’hexagones indiqué page ${BIOMES[UI.paint.b].p}.`}</span><div class="row"><button class="btn sm primary" data-act="endpaint">Terminer</button></div></div>`;
+  h+=`<section class="card"><header><h2>${esc(H().name)}</h2><span class="muted small">${esc(H().arch)}</span></header>
+    <div class="clock">${clockSVG()}<div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <p><b>${c.night?"Nuit":"Jour"} ${c.day}</b> · tranche ${c.i+1} sur ${slices()}</p>
+      <p class="small muted">Vous êtes en <b>${S.cur.key}</b> — ${b?esc(b.n):"hexagone inexploré"}.</p>
+      <div class="row"><button class="btn sm" data-act="tick">Avancer d’une tranche</button><button class="btn sm" data-act="camp">Camper</button><button class="btn sm" data-act="eatnow">Manger</button></div>
+    </div></div>
+    ${b&&b.warn?`<p class="small" style="color:var(--lantern)">${esc(b.warn)}</p>`:""}
+    <div class="row"><button class="btn primary" data-act="openhex" data-hex="${S.cur.key}">Agir ici</button>${b&&b.enc?`<button class="btn" data-act="enc">Rencontre (1D6)</button>`:""}${b&&(b.col||b.tool)?`<button class="btn" data-act="collect">Collecter</button>`:""}</div>
+  </section>`;
+  h+=`<section class="card"><header><h3>Carte · ${esc(region().name)}</h3><span class="small muted">Touchez un hexagone</span></header>
+    <div class="mapbox" id="mapbox">${mapSVG()}</div>
+    <div class="legend">${Object.entries(BIOMES).map(([k,v])=>`<span><i class="sw" style="background:${v.c}"></i>${esc(v.n)}</span>`).join("")}</div>
+    <div class="row">${S.regions.length>1?`<select id="regsel" aria-label="Région">${S.regions.map((r,i)=>`<option value="${i}" ${i===S.cur.reg?"selected":""}>${esc(r.name)}</option>`).join("")}</select>`:""}
+    <button class="btn sm" data-act="newregion">Nouvelle région (bord de la carte)</button></div>
+  </section>`;
+  return h;
+}
+const NONFOOD=["Bois","Charbon","Fer","Cuivre","Or","Épine de scarabée","Eau","Pétale d’or"];
+function foodOptions(){
+  const foods=S.inv.filter(x=>x.q>0 && x.durMax==null && !NONFOOD.includes(x.n) && !VETEMENTS.some(v=>v.n===x.n) && !OUTILS.some(o=>o.n===x.n) && !POTIONS.some(o=>o.n===x.n));
+  if(!foods.length) return `<span class="small muted">Rien à manger dans l’inventaire.</span>`;
+  return foods.slice(0,8).map(x=>`<button class="btn sm primary" data-act="eat" data-id="${x.id}">${esc(x.n)} (${x.q})</button>`).join("");
+}
+
+/* --- Protecteur --- */
+function attrBox(k, label){
+  const h=H(), v=h[k], mx=h[k+"Max"];
+  return `<div class="attr"><span class="name">${label}</span><span class="val">${k==="cou"?effCou():v}<small>/${mx}</small></span>
+  <div class="pips">${Array.from({length:5},(_,i)=>`<span class="pip ${i<v?"on":""}"></span>`).join("")}</div>
+  <div class="step"><button data-act="attr" data-a="${k}" data-d="-1" aria-label="${label} moins un">−</button><button data-act="attr" data-a="${k}" data-d="1" aria-label="${label} plus un">+</button></div>
+  <div class="step"><button data-act="attrmax" data-a="${k}" data-d="-1" aria-label="Maximum ${label} moins un" class="small">max−</button><button data-act="attrmax" data-a="${k}" data-d="1" aria-label="Maximum ${label} plus un" class="small">max+</button></div></div>`;
+}
+function herosHTML(){
+  const h=H(), a=ARCHES[h.arch]||{};
+  let s=`<section class="card"><header><h2>${esc(h.name)}</h2><span class="chip">${esc(h.arch)}</span></header>
+    <p class="small"><b>${esc(a.obj||"")}</b> : ${esc(a.pow||"")}</p>
+    <div class="attrs">${attrBox("ame","Âme")}${attrBox("cou","Courage")}${attrBox("end","Endurance")}</div>
+    <p class="small muted">Maximum 5 par Attribut. Si l’Âme tombe à 0, le Protecteur meurt ; le Courage et l’Endurance ne descendent jamais sous 1.</p>
+    <div>${["hon:Honneur","insp:Inspiration","pieces:Pièces"].map(x=>{const [k,l]=x.split(":"); const st=k==="pieces"?[-100,-10,10,100]:[-1,1];
+      return `<div class="counter"><span>${l}</span><span class="row" style="gap:4px">${st.filter(d=>d<0).map(d=>`<button class="btn sm" data-act="num" data-k="${k}" data-d="${d}">${d}</button>`).join("")}<span class="v">${h[k]}</span>${st.filter(d=>d>0).map(d=>`<button class="btn sm" data-act="num" data-k="${k}" data-d="${d}">+${d}</button>`).join("")}</span></div>`;}).join("")}
+      <div class="counter"><span>Faim</span><button class="btn sm ${h.faim?"danger":""}" data-act="togglefaim">${h.faim?"Affamé — retirer":"Rassasié"}</button></div>
+      <div class="counter"><span>Bonus de Courage temporaire</span><button class="btn sm" data-act="bonuscou">${h.bonusCou?"+1 actif — retirer":"Ajouter +1"}</button></div>
+    </div></section>`;
+  // Inventaire
+  const used=invUsed(), cap=invCap();
+  s+=`<section class="card"><header><h3>Inventaire</h3><span class="chip ${used>cap?"bad":""}">${used} / ${cap} emplacements</span></header>
+    <p class="small muted">Endurance × 6 emplacements ; les objets identiques s’empilent. L’objet de départ et les vêtements portés ne comptent pas.</p>
+    <div class="list">${S.inv.map(x=>{
+      const isTool=x.durMax!=null, isCloth=VETEMENTS.some(v=>v.n===x.n);
+      return `<div class="li"><span class="grow">${esc(x.n)}${isTool?` <span class="small muted">· durabilité ${x.dur}/${x.durMax}</span>`:""}${x.worn?` <span class="chip good">porté</span>`:""}</span>
+      ${isTool?`<button class="btn sm" data-act="usetool" data-id="${x.id}">Utiliser</button>`:`<button class="btn sm" data-act="qty" data-id="${x.id}" data-d="-1" aria-label="Retirer un">−</button><span class="qty">${x.q}</span><button class="btn sm" data-act="qty" data-id="${x.id}" data-d="1" aria-label="Ajouter un">+</button>`}
+      ${isCloth?`<button class="btn sm" data-act="wear" data-id="${x.id}">${x.worn?"Ôter":"Porter"}</button>`:""}
+      <button class="btn sm danger" data-act="delitem" data-id="${x.id}" aria-label="Supprimer ${esc(x.n)}">×</button></div>`;}).join("") || `<p class="muted small">Inventaire vide.</p>`}</div>
+    <div class="row"><input type="text" id="newitem" list="known" placeholder="Objet (ex. Bois, Hache, Thé de racines)" style="flex:1 1 180px"><input type="number" id="newqty" value="1" min="1" style="width:80px" aria-label="Quantité"><button class="btn primary" data-act="additem">Ajouter</button></div>
+    <datalist id="known">${[...RESSOURCES,...OUTILS.map(o=>o.n),...VETEMENTS.map(v=>v.n),...PLATS.map(p=>p.n),...POTIONS.map(p=>p.n)].map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+    ${["Bruja","Cucurbitus","Kiore"].filter(wearsSet).map(p=>`<p class="small" style="color:var(--ok)">${esc(ENSEMBLES[p])}</p>`).join("")}
+  </section>`;
+  // Sorts
+  s+=`<section class="card"><header><h3>Sorts</h3><span class="chip">${S.spells.length} / ${h.end}</span></header>
+    <p class="small muted">Un sort par biome, autant que votre Endurance. Pour apprendre : méditez dans le biome (3 tranches) et dépensez 5 Inspiration. Lancer un sort coûte 1 Inspiration et change un dé de 1.</p>
+    <div class="list">${S.spells.map((sp,i)=>`<div class="li"><span class="grow"><b>${esc(sp.name)}</b> <span class="small muted">· ${esc(BIOMES[sp.b]?BIOMES[sp.b].n:"")}</span></span><button class="btn sm" data-act="castspell">Lancer (−1 Insp.)</button><button class="btn sm danger" data-act="delspell" data-i="${i}" aria-label="Oublier">×</button></div>`).join("") || `<p class="small muted">Aucun sort pour l’instant.</p>`}</div>
+    <div class="row"><input type="text" id="spellname" placeholder="[verbe] + la / le / dans le… + [nom]" style="flex:1 1 200px">
+    <button class="btn" data-act="learnspell">Méditer et apprendre</button></div>
+    ${(()=>{const b=BIOMES[(hexAt(S.cur.key)||{}).b]; return b&&b.q?`<p class="small"><span class="eyebrow">Question de Magie · ${esc(b.n)}</span><br>${esc(b.q)}</p>`:"";})()}
+  </section>`;
+  s+=`<section class="card"><h3>Compagnons, amitiés, notes</h3><textarea id="heronotes" placeholder="Sauriflore apprivoisé, amitié des Yabas, paris gagnés contre les Kiores…">${esc(S.notes)}</textarea></section>`;
+  s+=`<section class="card"><h3>Options du mode Histoire</h3>
+    <label class="row"><input type="checkbox" id="opt-hunger" ${S.opts.noHunger?"checked":""}> Ignorer la faim (l’Horloge n’indique plus que le jour et la nuit)</label>
+    <label class="row"><input type="checkbox" id="opt-death" ${S.opts.softDeath?"checked":""}> Une mort moins pénalisante</label></section>`;
+  return s;
+}
+
+/* --- Dés --- */
+function diceHTML(t){
+  return `<div class="dice">${t.dice.map((d,i)=>`<span class="die ${d===t.kept&&t.dice.indexOf(t.kept)===i?(t.ok?"win":"lose"):"off"}">${d}</span>`).join("")}</div>`;
+}
+function testCard(t){
+  if(!t) return "";
+  return `<div class="result ${t.ok?"":"unknown"}"><span class="eyebrow">${esc(t.label)}${t.faim?" · Faim":""}${t.shield?" · Bouclier":""}${t.stim?" · Stimulant (−1)":""}${t.spell?" · Sort ("+(t.spell>0?"+":"")+t.spell+")":""}</span>
+   ${diceHTML(t)}<p class="verdict ${t.ok?"ok":"ko"}">${t.ok?"Succès":"Échec"}</p><p class="small muted">Résultat ${t.total} contre Courage ${t.cou}.</p>
+   ${!t.ok?`<div class="row"><button class="btn sm" data-act="redouble">Redoubler de Courage (−1 Endurance, relancer)</button>${S.spells.length&&H().insp>0?`<button class="btn sm" data-act="spellfix">Sort : −1 au dé (−1 Inspiration)</button>`:""}</div>`:""}</div>`;
+}
+function desHTML(){
+  const last=S.drawn.slice(-6).reverse();
+  let h=`<section class="card"><header><h2>Test de Courage</h2><span class="muted small">Succès si le dé ≤ ${effCou()}</span></header>
+    <div class="row"><label class="row small"><input type="checkbox" id="t-shield" ${UI.shield?"checked":""}> Bouclier</label><label class="row small"><input type="checkbox" id="t-stim" ${UI.stim?"checked":""}> Stimulant hardi</label>${H().faim&&!S.opts.noHunger?`<span class="chip bad">Faim : un dé de plus, le plus faible est écarté</span>`:""}</div>
+    <button class="btn primary block" data-act="test">Lancer le test</button>${testCard(UI.test)}</section>`;
+  h+=`<section class="card"><h3>Dés</h3><div class="grid2">
+    <button class="btn" data-act="roll" data-r="1d6">1D6</button><button class="btn" data-act="roll" data-r="2d6">2D6 (somme)</button>
+    <button class="btn" data-act="roll" data-r="d66">D66</button><button class="btn" data-act="roll" data-r="ferveur">${effCou()}D6, garder le plus haut</button></div>
+    ${UI.dice?`<div class="result"><span class="eyebrow">${esc(UI.dice.label)}</span><div class="dice">${UI.dice.dice.map(d=>`<span class="die">${d}</span>`).join("")}</div><p><b>${esc(UI.dice.text)}</b></p></div>`:""}</section>`;
+  h+=`<section class="card"><header><h3>Cartes</h3><span class="small muted">${S.deck.length} cartes dans la pioche</span></header>
+    <div class="row"><button class="btn primary" data-act="draw">Tirer une carte</button><button class="btn" data-act="shuffle">Remélanger les 52</button></div>
+    <div class="row">${last.map((c,i)=>i===0?cardHTML(c):cardHTML(c).replace('class="pcard','style="width:44px;height:62px;font-size:.8rem;opacity:.7" class="pcard')).join("")||`<span class="muted small">Aucune carte tirée.</span>`}</div></section>`;
+  h+=`<section class="card"><h3>Parler aux habitants</h3><div class="row"><button class="btn" data-act="tbl" data-id="oracle">Oracle oui / non</button><button class="btn" data-act="tbl" data-id="tonalite">Tonalité</button><button class="btn" data-act="tbl" data-id="sujet">Sujet</button></div>
+    ${["oracle","tonalite","sujet"].map(id=>UI.results&&UI.results[id]?resultHTML(UI.results[id], id):"").join("")}</section>`;
+  h+=fightHTML();
+  return h;
+}
+function fightHTML(){
+  const f=UI.fight;
+  let h=`<section class="card"><header><h3>Affrontement</h3><span class="small muted">p. 13 et 65</span></header>`;
+  if(!f){
+    h+=`<p class="small muted">Choisissez la créature. Attaquer un être vivant coûte 1 point d’Honneur (pas dans les Ruines).</p>
+    <div class="row"><select id="foe">${CREATURES.map((c,i)=>`<option value="${i}">${esc(c.n)}${c.ame?` (Âme ${c.ame}${c.atk?`, Attaque ${c.atk}`:""})`:""}</option>`).join("")}<option value="x">Autre créature…</option></select>
+    <input type="number" id="foeame" placeholder="Âme" min="1" style="width:90px" aria-label="Âme de la créature"><button class="btn primary" data-act="fight">Commencer</button></div>`;
+  } else {
+    h+=`<p><b>${esc(f.n)}</b> — Âme ${f.ame}/${f.max}${f.atk?` · Attaque ${f.atk}`:""}</p>
+    <div class="row"><button class="btn primary" data-act="attack" ${f.ame<=0?"disabled":""}>Attaquer</button><button class="btn" data-act="flee">Fuir</button>
+    ${H().arch==="Guerrier"?`<button class="btn" data-act="fleesword">Fuir (pouvoir de l’épée)</button>`:""}<button class="btn sm" data-act="endfight">Terminer</button></div>
+    ${f.dmg?`<div class="banner"><b>Vous subissez ${f.dmg} point${f.dmg>1?"s":""} de dégâts.</b><div class="row">${f.ruin?`<button class="btn sm danger" data-act="dmg" data-a="ame">Perdre ${f.dmg} Âme</button>`:`<button class="btn sm" data-act="dmg" data-a="ame">−1 Âme</button><button class="btn sm" data-act="dmg" data-a="cou">−1 Courage</button><button class="btn sm" data-act="dmg" data-a="end">−1 Endurance</button>`}</div></div>`:""}
+    <div class="list small">${f.log.slice().reverse().map(l=>`<div class="li">${esc(l)}</div>`).join("")}</div>`;
+  }
+  h+=`<details><summary>Pari amical avec un Kiore (p. 35)</summary>
+    <div class="row" style="margin-top:8px"><input type="number" id="mise" value="10" min="1" style="width:110px" aria-label="Mise"><button class="btn" data-act="pari">Duel au meilleur des trois</button></div>
+    ${UI.pari?`<p class="small">${esc(UI.pari)}</p>`:""}</details></section>`;
+  return h;
+}
+
+/* --- Tables --- */
+function tablesHTML(){
+  let h=`<section class="card"><h2>Générateurs</h2>
+   <div class="grid2"><button class="btn primary" data-act="go-village">Village ou ferme (5 cartes)</button><button class="btn" data-act="go-comptoir">Comptoir</button>
+   <button class="btn" data-act="go-habitant">Habitant complet</button><button class="btn" data-act="go-ruine">Ruine complète</button>
+   <button class="btn" data-act="go-mission">Mission et récompense</button><button class="btn" data-act="go-ecran">Écran des langues anciennes</button></div>
+   </section>`;
+  for(const [g, ids] of TABLE_GROUPS){
+    h+=`<section class="card"><h3>${esc(g)}</h3>${ids.map(id=>tableRow(id)).join("")}</section>`;
+  }
+  h+=encyclo();
+  return h;
+}
+function tableRow(id){
+  const t=T[id], es=entriesOf(id);
+  const learned=S.learn[id]||{};
+  const keysFor=(i)=>{ const ks=expandK(es[i].k, t.die).filter(k=>!(learned[k]!=null && learned[k]!==i)); for(const [k,v] of Object.entries(learned)) if(v===i && !ks.includes(k)) ks.push(k); return ks; };
+  const r=UI.results&&UI.results[id];
+  return `<details ${r?"open":""}><summary>${esc(t.title)} <span class="small muted">· p. ${t.page}</span></summary>
+    ${t.note?`<p class="small" style="color:var(--lantern)">${esc(t.note)}</p>`:""}
+    <div class="row" style="margin:8px 0"><button class="btn sm primary" data-act="tbl" data-id="${id}">${t.die==="card"?"Tirer une carte":t.die==="d66"?"Lancer 1D66":"Lancer 1D6"}</button></div>
+    ${r?resultHTML(r, id):""}
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>${t.die==="card"?"Carte":"Dé"}</th><th>Résultat</th></tr></thead><tbody>
+    ${es.map((e,i)=>{const ks=keysFor(i); return `<tr><td style="white-space:nowrap">${ks.length?esc(ks.join(" ")):`<span class="muted">?</span>`}</td><td>${esc(e.t)}</td></tr>`;}).join("")}
+    </tbody></table></div>
+    ${Object.keys(learned).length?`<button class="link" data-act="forget" data-id="${id}">Oublier ce que j’ai appris pour cette table</button>`:""}
+  </details>`;
+}
+function encyclo(){
+  const pr=(p)=>p==null?"—":p+" p.";
+  return `<section class="card"><h3>Encyclopédie</h3>
+  <details><summary>Équipement (p. 46)</summary><div class="tblwrap"><table class="tbl"><thead><tr><th>Outil</th><th>Prix</th><th>Dur.</th><th>Composants · effet</th><th></th></tr></thead><tbody>
+  ${OUTILS.map(o=>`<tr><td><b>${esc(o.n)}</b><br><span class="small muted">${o.pe}</span></td><td>${pr(o.prix)}</td><td>${o.dur||"∞"}</td><td>${esc(o.comp)}<br><span class="small">${esc(o.eff)}</span></td><td><button class="btn sm" data-act="buy" data-n="${esc(o.n)}" data-p="${o.prix}">Acheter</button></td></tr>`).join("")}</tbody></table></div>
+  <p class="small muted">Grande boutique : 5 articles (1D6 = celui qui manque). Petite : 3 articles (3D6 différents = ceux qui manquent). Fabrication gratuite avec les composants.</p></details>
+  <details><summary>Vêtements (p. 47)</summary><div class="tblwrap"><table class="tbl"><tbody>
+  ${VETEMENTS.map(v=>`<tr><td><b>${esc(v.n)}</b><br><span class="small muted">${v.pe}</span></td><td>${v.prix?pr(v.prix):esc(v.note)}</td><td>${v.prix?`<button class="btn sm" data-act="buy" data-n="${esc(v.n)}" data-p="${v.prix}">Acheter</button>`:`<button class="btn sm" data-act="buy" data-n="${esc(v.n)}" data-p="0">Recevoir</button>`}</td></tr>`).join("")}
+  </tbody></table></div><p class="small muted">Trois vêtements portés au maximum ; portés, ils ne prennent pas de place.<br>${Object.entries(ENSEMBLES).map(([k,v])=>`<b>${k}</b> : ${esc(v)}`).join("<br>")}</p></details>
+  <details><summary>Plats de taverne (p. 48)</summary><div class="tblwrap"><table class="tbl"><tbody>
+  ${PLATS.map(p=>`<tr><td><b>${esc(p.n)}</b><br><span class="small muted">${p.pe} · ${pr(p.prix)}</span></td><td>${esc(p.eff)}<br><span class="small muted">${esc(p.ing)}</span></td><td><button class="btn sm" data-act="buy" data-n="${esc(p.n)}" data-p="${p.prix}">Acheter</button></td></tr>`).join("")}
+  </tbody></table></div></details>
+  <details><summary>Potions (p. 45)</summary><p class="small" style="color:var(--lantern)">La page 45 manque : prix et ingrédients à lire dans le livre.</p><div class="tblwrap"><table class="tbl"><tbody>
+  ${POTIONS.map(p=>`<tr><td><b>${esc(p.n)}</b>${p.pe!=="?"?`<br><span class="small muted">${p.pe}</span>`:""}</td><td>${esc(p.eff)}</td><td><button class="btn sm" data-act="buy" data-n="${esc(p.n)}" data-p="0">Ajouter</button></td></tr>`).join("")}
+  </tbody></table></div></details>
+  <details><summary>Établissements (p. 44 à 54)</summary><div class="small" style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+  <p><b>Oratoire</b> : échangez 5 points d’Honneur contre +1 au maximum d’un Attribut. <button class="btn sm" data-act="oratoire">Utiliser</button></p>
+  <p><b>Auberge</b> : grande 300 p. la nuit (tout récupérer, stocke 10 objets) ; petite 150 p. (tout un Attribut, stocke 5 objets). Stockage 50 p. par objet. Pas de repas à prendre pendant la nuit à l’auberge.
+   <button class="btn sm" data-act="inn" data-g="1">Grande auberge</button> <button class="btn sm" data-act="inn" data-g="0">Petite auberge</button></p>
+  <p><b>Bureau de cartographie</b> : carte de biome 200 p. ; carte de localisation 500 p. (grands bureaux seulement). 1D6 donne la direction ; allez tout droit jusqu’au premier hexagone vierge.</p>
+  <p><b>Agence de missions</b> : grande 4 missions, petite 2 (1D66 chacune).</p>
+  <p><b>Gare</b> : chaque gare se relie à 2 autres au maximum ; pas de voie dans les hexagones vierges ni à travers les Jungles. En train, l’Horloge avance d’une tranche par hexagone, mais pas de repas à prendre. Gare à l’abandon : Machine à vapeur, ou une Âme en bouteille par trajet.</p>
+  </div></details></section>`;
+}
+
+/* --- Journal --- */
+function journalHTML(){
+  const trues=S.mem.filter(m=>m.st==="vrai").length;
+  let h=`<section class="card"><h2>Journal de voyage</h2>
+    <textarea id="jtext" placeholder="Ce que vous voyez, ressentez, apprenez…"></textarea>
+    <button class="btn primary" data-act="addj">Écrire</button>
+    <div>${S.journal.slice(0, UI.jmore?9999:30).map(j=>`<div class="journal-entry"><span class="meta">${j.night?"Nuit":"Jour"} ${j.day} · ${esc(j.hex||"")}</span><span class="txt">${esc(j.text)}</span>
+      <span><button class="link" data-act="delj" data-id="${j.id}">Effacer</button></span></div>`).join("")}</div>
+    ${S.journal.length>30&&!UI.jmore?`<button class="btn sm" data-act="jmore">Afficher tout (${S.journal.length})</button>`:""}</section>`;
+  h+=`<section class="card"><header><h3>Souvenirs retrouvés</h3><span class="chip">${S.mem.length} souvenir${S.mem.length>1?"s":""} · ${trues}/3 vrais</span></header>
+    <p class="small muted">Chaque écran des langues anciennes donne 3 mots à reformuler en souvenir. Ferveur : lancez autant de D6 que votre Courage et gardez le plus haut. Avec 3 souvenirs, l’appel du Noyau vous ramène en E13.</p>
+    <button class="btn" data-act="go-ecran">Lire un écran (3 mots)</button>
+    <div class="list">${S.mem.map(m=>`<div class="li" style="flex-direction:column;align-items:stretch">
+      <div class="row" style="justify-content:space-between"><span class="small"><b>${esc(m.words.join(" · "))}</b></span><span class="chip ${m.st==="vrai"?"good":m.st==="faux"?"bad":""}">${m.st==="vrai"?"Vrai":m.st==="faux"?"Faux":"Non éprouvé"} · Ferveur ${m.f||"?"}</span></div>
+      <textarea data-mem="${m.id}" placeholder="Reformulez ces mots en un souvenir…">${esc(m.text)}</textarea>
+      <div class="row">${!m.f?`<button class="btn sm" data-act="ferveur" data-id="${m.id}">Définir la Ferveur</button>`:""}<button class="link" data-act="delmem" data-id="${m.id}">Supprimer</button></div></div>`).join("")}</div>
+    ${S.mem.length>=3?salleHTML():""}</section>`;
+  h+=`<section class="card"><h3>Missions en cours</h3>
+    <div class="list">${S.missions.map(m=>`<div class="li"><input type="checkbox" data-act="missdone" data-id="${m.id}" ${m.done?"checked":""} aria-label="Mission accomplie"><span class="grow ${m.done?"muted":""}">${esc(m.text)}<br><span class="small muted">${esc(m.where||"")} · ${esc(m.reward||"")}</span></span><button class="btn sm danger" data-act="delmiss" data-id="${m.id}" aria-label="Supprimer">×</button></div>`).join("")||`<p class="small muted">Aucune mission. Tirez-en dans une agence (onglet Tables).</p>`}</div></section>`;
+  h+=`<section class="card"><h3>Sauvegarde</h3>
+    <p class="small muted">${UI.cloud==="ok"?"La partie est enregistrée dans votre compte et sur cet appareil.":"La partie est enregistrée sur cet appareil."} Pour une copie de secours, copiez le texte de sauvegarde et gardez-le dans une note.</p>
+    <div class="row"><button class="btn" data-act="export">Copier la sauvegarde</button><button class="btn" data-act="import">Importer une sauvegarde</button><button class="btn danger" data-act="reset">Nouvelle partie</button></div>
+    ${UI.io||""}</section>`;
+  return h;
+}
+function salleHTML(){
+  const avail=S.mem.filter(m=>m.st!=="vrai"&&m.st!=="faux"&&m.f);
+  return `<div class="banner"><b>L’appel du Noyau</b><span class="small">Retournez en E13. Entrer dans la Salle des Souvenirs coûte 1 point d’Attribut au choix ; votre Prédécesseur ne tombe qu’après 3 vrais souvenirs.</span>
+   ${!S.salle?`<div class="row"><button class="btn sm" data-act="salle" data-a="ame">Entrer (−1 Âme)</button><button class="btn sm" data-act="salle" data-a="cou">Entrer (−1 Courage)</button><button class="btn sm" data-act="salle" data-a="end">Entrer (−1 Endurance)</button></div>`
+   :`<div class="row"><button class="btn sm primary" data-act="bataille" ${avail.length?"":"disabled"}>Bataille des souvenirs</button><button class="btn sm" data-act="sortie">Quitter la salle</button></div>
+     ${UI.bat||""}`}</div>`;
+}
+
+/* --- Feuille de l'hexagone --- */
+function renderSheet(){
+  const L=document.getElementById("layer");
+  if(!UI.sheet){ L.innerHTML=""; return; }
+  L.innerHTML=`<div class="scrim" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="Détails">${UI.sheet()}</div></div>`;
+}
+function hexSheet(k){
+  return ()=>{
+    const hx=hexAt(k)||{b:null,marks:[],note:""}, b=hx.b?BIOMES[hx.b]:null, isHere=S.cur.key===k;
+    const adj=neighbors(S.cur.key).includes(k);
+    let h=`<div class="grab"></div><header class="row" style="justify-content:space-between"><h2>Hexagone ${k}</h2>${b?`<span class="chip" style="border-color:${b.c}"><i class="sw" style="background:${b.c}"></i>${esc(b.n)}</span>`:`<span class="chip">Inexploré</span>`}</header>`;
+    if(!isHere) h+=`<div class="row"><button class="btn primary" data-act="move" data-hex="${k}">${adj?"S’y rendre (+1 tranche)":"S’y rendre (+1 tranche, non adjacent)"}</button><button class="btn" data-act="movefree" data-hex="${k}">Y aller sans avancer l’Horloge</button></div>
+      ${!adj?`<p class="small muted">On ne se déplace normalement que vers un hexagone voisin. Le voyage libre sert au train, à l’oie céleste ou à la téléportation.</p>`:""}`;
+    else h+=`<p class="small muted">Vous êtes ici.</p>`;
+    if(!b) h+=`<div class="row"><button class="btn lantern" data-act="rollbiome" data-hex="${k}">Déterminer le biome (1D6)</button>
+      <select id="setbiome" aria-label="Choisir le biome"><option value="">…ou choisir</option>${Object.entries(BIOMES).map(([kk,v])=>`<option value="${kk}">${esc(v.n)}</option>`).join("")}</select></div>`;
+    if(b && b.enc) h+=`<div class="row"><button class="btn primary" data-act="enc" data-hex="${k}">Rencontre (1D6)</button>${(b.col||b.tool)?`<button class="btn" data-act="collect" data-hex="${k}">Collecter</button>`:""}<button class="btn" data-act="meditate">Méditer (3 tranches)</button></div>`;
+    if(UI.results && UI.results.hex) h+=resultHTML(UI.results.hex, "hex");
+    if(UI.collectRes) h+=UI.collectRes;
+    if(b && b.warn) h+=`<p class="small" style="color:var(--lantern)">${esc(b.warn)}</p>`;
+    h+=`<div><p class="eyebrow">Sur cet hexagone</p><div class="row" style="margin-top:6px">${MARKS.map(([m,ic])=>`<button class="btn sm ${hx.marks&&hx.marks.includes(m)?"primary":""}" data-act="togglemark" data-hex="${k}" data-mark="${m}">${ic} ${m}</button>`).join("")}</div></div>
+    <label class="f">Notes (ce qui y est consigné reste canonique)<textarea id="hexnote" data-hex="${k}">${esc(hx.note||"")}</textarea></label>
+    <div class="row"><button class="btn sm ${hx.harvest===S.clock.day?"primary":""}" data-act="harvest" data-hex="${k}">${hx.harvest===S.clock.day?"Récolté aujourd’hui":"Marquer comme récolté"}</button>
+    ${hx.dry?`<button class="btn sm" data-act="water" data-hex="${k}">Arroser</button>`:`<button class="btn sm" data-act="dry" data-hex="${k}">Jardin récolté (à arroser)</button>`}
+    ${b?`<button class="btn sm" data-act="paintmore" data-hex="${k}">Délimiter le biome</button>`:""}
+    <button class="btn sm danger" data-act="clearhex" data-hex="${k}">Effacer l’hexagone</button></div>
+    <button class="btn block" data-act="closesheet">Fermer</button>`;
+    return h;
+  };
+}
+function genSheet(title, html){ return ()=>`<div class="grab"></div><h2>${esc(title)}</h2>${typeof html==="function"?html():html}<button class="btn block" data-act="closesheet">Fermer</button>`; }
+
+/* ================== Générateurs composés ================== */
+function genVillage(){
+  const cards=[]; const parts=[];
+  let n=5; let extra=0;
+  for(let i=0;i<n+extra;i++){
+    const c=draw(); const p=parseCard(c);
+    const isFig=["V","D","R"].includes(p.v);
+    const r=rollTable("etab", c);
+    if(!isFig) r.size=rollTable("etab_taille", c);
+    if(isFig && r.sub && r.sub.entry && /^Ville/.test(r.sub.entry.t)) extra+=3;
+    cards.push(r);
+  }
+  UI.results.vil = cards;
+  return cards;
+}
+function villageHTML(){
+  const cards=UI.results.vil||[];
+  return `<p class="small muted">5 cartes ; une carte en double peut donner deux établissements ou un seul plus grand.</p>`+
+    cards.map((r,i)=>resultHTML(r,"vil."+i)+(r.size?resultHTML(r.size,"vil."+i+".size"):"")).join("")+
+    `<div class="row"><button class="btn primary" data-act="vil2hex">Noter sur l’hexagone ${S.cur.key}</button><button class="btn" data-act="vil2j">Au journal</button></div>`;
+}
+function villageText(){ return (UI.results.vil||[]).map(r=>"• "+(r.entry?r.entry.t:"?")+(r.size&&r.size.entry?" — "+r.size.entry.t:"")+(r.sub&&r.sub.entry?" — "+r.sub.entry.t:"")).join("\n"); }
+function genHabitant(){
+  UI.results.hab={peuple:rollTable("peuple"), age:rollTable("age"), perso:rollTable("perso"), acc:rollTable("accroche")};
+}
+function habitantHTML(){
+  const r=UI.results.hab;
+  return ["peuple","age","perso","acc"].map(k=>resultHTML(r[k],"hab."+k)).join("")+
+   `<label class="f">Nom de l’habitant<input type="text" id="habname" placeholder="Choisissez un nom (table p. 60)"></label>
+    <div class="row"><button class="btn primary" data-act="hab2j">Au journal</button><button class="btn" data-act="go-habitant">Un autre</button></div>`;
+}
+function genRuine(){ UI.results.ru={cre:rollTable("ruine_creature"), env:rollTable("ruine_env"), tre:rollTable("ruine_tresor")}; }
+function ruineHTML(){
+  const r=UI.results.ru;
+  return `<p class="small muted">Il faut au moins 1 point d’Honneur ou une torche pour entrer. Combattre ici ne coûte pas d’Honneur ; les créatures ne guérissent pas si vous fuyez.</p>`+
+    resultHTML(r.cre,"ru.cre")+resultHTML(r.env,"ru.env")+resultHTML(r.tre,"ru.tre")+
+    `<div class="row"><button class="btn" data-act="ru2j">Au journal</button></div>`;
+}
+function genEcran(){ UI.results.ec=[rollTable("langues"),rollTable("langues"),rollTable("langues")]; }
+function ecranHTML(){
+  const w=UI.results.ec;
+  return `<p class="small muted">Mots compris sur l’écran :</p><div class="row">${w.map(r=>`<span class="chip" style="font-size:1rem">${esc(r.entry.t)} <span class="muted">${r.roll[0]}.${r.roll[1]}</span></span>`).join("")}</div>
+  <label class="f">Votre souvenir<textarea id="memtext" placeholder="Reformulez ces mots en un souvenir de votre Prédécesseur…"></textarea></label>
+  <div class="row"><button class="btn primary" data-act="savemem">Garder ce souvenir et définir sa Ferveur</button></div>`;
+}
+function genMission(){ UI.results.mi={m:rollTable("mission"), r:rollTable("recompense")}; }
+function missionHTML(){
+  const r=UI.results.mi; const rnd=/aléatoire/.test(r.m.entry.t);
+  return resultHTML(r.m,"mi.m")+(rnd?resultHTML(r.r,"mi.r"):"")+`<div class="row"><button class="btn primary" data-act="takemission">Accepter la mission</button><button class="btn" data-act="go-mission">Une autre</button></div>`;
+}
+function genComptoir(){
+  const c=draw(); const p=parseCard(c);
+  const out={card:c, who: d6()};
+  if(p.v==="V"&&p.red){ out.note="Valet rouge : grand comptoir avec deux établissements supplémentaires."; out.etabs=[rollTable("etab"),rollTable("etab")]; }
+  else if(p.v==="D"&&p.red){ out.note="Dame rouge : comptoir fortifié et gardé (au moins 1 point d’Honneur). Une autre carte définit l’établissement."; out.etabs=[rollTable("etab")]; }
+  else out.etabs=[rollTable("etab", c)];
+  UI.results.co=out;
+}
+function comptoirHTML(){
+  const o=UI.results.co;
+  return `<div class="row">${cardHTML(o.card)}<span>Tenu par : <b>${o.who<=3?"des Cucurbitus":"des Brujas"}</b> <span class="small muted">(dé ${o.who})</span></span></div>${o.note?`<p class="small">${esc(o.note)}</p>`:""}`+
+   o.etabs.map((r,i)=>resultHTML(r,"co.etabs."+i)).join("")+`<div class="row"><button class="btn" data-act="go-habitant">Créer le gérant</button><button class="btn primary" data-act="co2hex">Noter sur l’hexagone ${S.cur.key}</button></div>`;
+}
+
+/* ================== Interactions ================== */
+UI.results = {};
+function toast(msg){
+  UI.toastMsg=msg; let el=document.querySelector(".toast"); if(!el){ el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status"); document.body.appendChild(el); }
+  el.textContent=msg; clearTimeout(UI.toastT); UI.toastT=setTimeout(()=>el.remove(), 3200);
+}
+function openSheet(fn){ UI.sheet=fn; renderSheet(); }
+function closeSheet(){ UI.sheet=null; UI.collectRes=null; renderSheet(); }
+function rerender(){ render(); }
+
+document.addEventListener("click", (ev)=>{
+  const tab=ev.target.closest("[data-tab]");
+  if(tab){ UI.tab=tab.dataset.tab; if(UI.tab==="voyage") UI.scrollMap=true; render(); window.scrollTo(0,0); return; }
+  const hexEl=ev.target.closest("[data-hex].hex");
+  if(hexEl && S){ onHex(hexEl.dataset.hex); return; }
+  const el=ev.target.closest("[data-act]"); if(!el) return;
+  if(el.classList.contains("scrim") && ev.target!==el) return;
+  act(el.dataset.act, el, ev);
+});
+document.addEventListener("input", (ev)=>{
+  const t=ev.target; if(!S) return;
+  if(t.id==="hexnote"){ ensureHex(t.dataset.hex).note=t.value; save(); }
+  else if(t.id==="heronotes"){ S.notes=t.value; save(); }
+  else if(t.dataset.mem){ const m=S.mem.find(x=>x.id===t.dataset.mem); if(m){ m.text=t.value; save(); } }
+});
+document.addEventListener("change", (ev)=>{
+  const t=ev.target; if(!S) return;
+  if(t.id==="regsel"){ S.cur.reg=+t.value; S.cur.key=Object.keys(region().hexes)[0]||START; save(); render(); }
+  if(t.id==="setbiome" && t.value){ const k=hexKeyOfSheet(); setBiome(k, t.value); }
+  if(t.id==="t-shield"){ UI.shield=t.checked; }
+  if(t.id==="t-stim"){ UI.stim=t.checked; }
+  if(t.id==="opt-hunger"){ S.opts.noHunger=t.checked; if(t.checked){ H().faim=false; S.clock.mealDue=false; } save(); render(); }
+  if(t.id==="opt-death"){ S.opts.softDeath=t.checked; save(); }
+  if(t.dataset.act==="missdone"){ const m=S.missions.find(x=>x.id===t.dataset.id); if(m){ m.done=t.checked; save(); render(); } }
+});
+function hexKeyOfSheet(){ const n=document.getElementById("hexnote"); return n?n.dataset.hex:S.cur.key; }
+
+function onHex(k){
+  if(UI.paint){
+    const p=UI.paint;
+    if(p.cands.includes(k)){
+      ensureHex(k).b=p.b; p.done.push(k);
+      if(p.left!=null) p.left--;
+      if(p.left===0){ UI.paint=null; toast("Biome délimité."); }
+      else p.cands=paintCands(p);
+      save(); render(); return;
+    }
+  }
+  UI.sel=k; UI.results.hex=null; UI.collectRes=null; openSheet(hexSheet(k)); render();
+}
+function paintCands(p){
+  const set=new Set();
+  for(const d of p.done) for(const n of neighbors(d)){ const hx=hexAt(n); if(!hx||!hx.b) set.add(n); }
+  return [...set];
+}
+function startPaint(k, b){
+  const size=BIOMES[b].size;
+  UI.paint={b, done:[k], left: size==null?null:size-1, cands:[]};
+  UI.paint.cands=paintCands(UI.paint);
+  if(UI.paint.left===0 || !UI.paint.cands.length) UI.paint=null;
+}
+function setBiome(k, b){
+  ensureHex(k).b=b; save();
+  logJ("En "+k+" : "+BIOMES[b].n+".");
+  closeSheet(); startPaint(k,b); render();
+  if(UI.paint) toast("Délimitez le biome sur la carte, puis faites le jet de rencontre.");
+}
+function moveTo(k, free){
+  ensureHex(k); S.cur.key=k; UI.sel=k;
+  if(!free) advance(1);
+  const hx=hexAt(k);
+  if(H().arch==="Troubadour" && hx.marks && hx.marks.includes("Village") && !hx.sung){ hx.sung=true; const g=d6()*10; H().pieces+=g; toast("Vous jouez une chanson : +"+g+" pièces"); }
+  save();
+  UI.results.hex=null; UI.collectRes=null;
+  openSheet(hexSheet(k)); render();
+}
+
+function act(a, el, ev){
+  const d=el.dataset;
+  switch(a){
+    case "create": {
+      const name=(document.getElementById("c-name").value||"").trim()||"Protecteur";
+      const arch=(document.querySelector('input[name="arch"]:checked')||{}).value||"Guerrier";
+      S=freshState(name, arch); save(); UI.tab="voyage"; UI.scrollMap=true; render(); pushCloud(); return;
+    }
+    case "closesheet": closeSheet(); UI.sel=null; render(); return;
+    case "openhex": onHex(d.hex); return;
+    case "move": moveTo(d.hex, false); return;
+    case "movefree": moveTo(d.hex, true); return;
+    case "rollbiome": { const r=rollTable("biome"); toast("1D6 = "+r.roll+" : "+r.entry.t); setBiome(d.hex, r.entry.biome); return; }
+    case "endpaint": UI.paint=null; render(); return;
+    case "paintmore": { const hx=hexAt(d.hex); closeSheet(); UI.paint={b:hx.b, done:[d.hex], left:null, cands:[]}; UI.paint.cands=paintCands(UI.paint); render(); return; }
+    case "enc": {
+      const k=d.hex||S.cur.key; const hx=hexAt(k); if(!hx||!hx.b||!BIOMES[hx.b].enc) return;
+      UI.results.hex=rollTable(BIOMES[hx.b].enc);
+      logJ("Rencontre en "+k+" — "+resultText(UI.results.hex));
+      if(!UI.sheet) openSheet(hexSheet(k)); renderSheet(); return;
+    }
+    case "collect": { collectFlow(d.hex||S.cur.key); return; }
+    case "collecttool": { const it=S.inv.find(x=>x.id===d.id); it.dur--; if(it.dur<=0){ S.inv=S.inv.filter(x=>x!==it); toast(it.n+" est cassé."); } countCollect(d.hex); UI.collectRes=chooseFrom(d.col); save(); renderSheet(); return; }
+    case "collecthand": {
+      const t=courageTest({label:"Collecte à mains nues"}); countCollect(d.hex);
+      let h=`<div class="result ${t.ok?"":"unknown"}">${diceHTML(t)}<p class="verdict ${t.ok?"ok":"ko"}">${t.ok?"Succès":"Échec"}</p>`;
+      if(t.ok){ UI.results.col=rollTable(d.col); h+=resultHTML(UI.results.col,"col"); } else h+=`<p class="small">Vous ne trouvez rien cette fois.</p>`;
+      UI.collectRes=h+`</div>`; save(); renderSheet(); return;
+    }
+    case "pick": { const e=entriesOf(d.col)[+d.i]; const g=gainFrom(e); logJ("Collecte : "+g); UI.collectRes=`<p class="chip good">${esc(g)}</p>`; renderSheet(); render(); return; }
+    case "gain": { const r=getByPath(d.path); if(!r||!r.entry) return; const g=gainFrom(r.entry); r.gained=true; toast(g); logJ("Gain : "+g); render(); return; }
+    case "choice": { const r=getByPath(d.path); UI.collectRes=chooseFrom(r.id); if(UI.sheet) renderSheet(); else openSheet(genSheet("Choisir un objet", ()=>UI.collectRes)); return; }
+    case "teach": { const r=getByPath(d.path); teach(r.id, r.key, +d.i); refreshResult(r); UI.fixing=null; if(d.path==="batneed") bataille(r.roll); rerenderAll(); return; }
+    case "teachnew": { const r=getByPath(d.path); const inp=document.getElementById("other-"+d.path.replace(/\./g,"-")); const txt=(inp&&inp.value||"").trim(); if(!txt) return; const i=addExtra(r.id, txt); teach(r.id, r.key, i); refreshResult(r); UI.fixing=null; if(d.path==="batneed") bataille(r.roll); rerenderAll(); return; }
+    case "okkey": { const r=getByPath(d.path); confirmKey(r.id, r.key); r.check=false; rerenderAll(); return; }
+    case "fix": UI.fixing = UI.fixing===d.path?null:d.path; rerenderAll(); return;
+    case "forget": delete S.learn[d.id]; delete S.ok[d.id]; delete S.extra[d.id]; save(); render(); return;
+    case "markhex": { const k=UI.sheet&&document.getElementById("hexnote")?hexKeyOfSheet():S.cur.key; const hx=ensureHex(k); hx.marks=hx.marks||[]; if(!hx.marks.includes(d.mark)) hx.marks.push(d.mark); const r=getByPath(d.path); if(r&&r.entry){ hx.note=(hx.note?hx.note+"\n":"")+r.entry.t+(r.sub&&r.sub.entry?" "+r.sub.entry.t:""); } save(); toast("Noté sur l’hexagone "+k); rerenderAll(); return; }
+    case "togglemark": { const hx=ensureHex(d.hex); hx.marks=hx.marks||[]; hx.marks=hx.marks.includes(d.mark)?hx.marks.filter(m=>m!==d.mark):[...hx.marks,d.mark]; save(); rerenderAll(); return; }
+    case "harvest": { const hx=ensureHex(d.hex); hx.harvest = hx.harvest===S.clock.day?null:S.clock.day; save(); rerenderAll(); return; }
+    case "dry": ensureHex(d.hex).dry=true; save(); rerenderAll(); return;
+    case "water": { const can=S.inv.find(x=>x.n==="Arrosoir"); if(can){ can.water=(can.water==null?6:can.water); if(can.water<=0){ toast("L’arrosoir est vide : remplissez-le dans une étendue d’eau."); return; } can.water--; } ensureHex(d.hex).dry=false; save(); toast(can?"Arrosé (reste "+can.water+" eau)":"Arrosé"); rerenderAll(); return; }
+    case "clearhex": { if(d.hex===S.cur.key && d.hex===START) return; delete region().hexes[d.hex]; save(); closeSheet(); render(); return; }
+    case "meditate": advance(3); toast("Vous méditez : l’Horloge avance de 3 tranches."); rerenderAll(); return;
+    case "tick": advance(1); render(); return;
+    case "camp": openSheet(genSheet("Camper", ()=>`<p class="small muted">Avancez l’Horloge sans bouger. Si vous franchissez la limite jour/nuit, mangez au réveil.</p><div class="row">${[1,2,3,4,5,6].slice(0,slices()*2).map(n=>`<button class="btn" data-act="campn" data-n="${n}">${n} tranche${n>1?"s":""}</button>`).join("")}<button class="btn" data-act="campdawn">Jusqu’à l’aube</button></div>`)); return;
+    case "campn": closeSheet(); advance(+d.n); render(); return;
+    case "campdawn": { closeSheet(); let n=0; const c=S.clock; if(c.night) n=slices()-c.i; else n=slices()-c.i+slices(); advance(n); render(); return; }
+    case "eatnow": openSheet(genSheet("Manger", ()=>`<p class="small muted">En dehors du passage jour/nuit, la nourriture rend des points (1 au choix si rien n’est précisé).</p><div class="row">${foodOptions()}</div>`)); return;
+    case "eat": {
+      const it=S.inv.find(x=>x.id===d.id); if(!it||it.q<=0) return; it.q--; if(it.q<=0) S.inv=S.inv.filter(x=>x!==it);
+      if(S.clock.mealDue){ S.clock.mealDue=false; H().faim=false; toast("Vous mangez : "+it.n+". La Faim est écartée."); }
+      else { H().faim=false; UI.sheet=genSheet("Récupérer", ()=>`<p>Vous mangez : <b>${esc(it.n)}</b>. Quel Attribut récupère 1 point ?</p><div class="row"><button class="btn" data-act="heal" data-a="ame">Âme</button><button class="btn" data-act="heal" data-a="cou">Courage</button><button class="btn" data-act="heal" data-a="end">Endurance</button></div>`); }
+      save(); render(); return;
+    }
+    case "heal": setAttr(d.a, 1); closeSheet(); render(); return;
+    case "skipmeal": S.clock.mealDue=false; H().faim=true; save(); render(); return;
+    case "newregion": S.regions.push({name:"Région "+(S.regions.length+1), hexes:{}}); S.cur.reg=S.regions.length-1; S.cur.key=hk(4,12); ensureHex(S.cur.key); save(); UI.scrollMap=true; render(); toast("Nouvelle région : placez-vous sur l’hexagone d’entrée."); return;
+    // Protecteur
+    case "attr": setAttr(d.a, +d.d); render(); return;
+    case "attrmax": { const h=H(), k=d.a+"Max"; h[k]=clamp(h[k]+(+d.d),1,5); h[d.a]=Math.min(h[d.a],h[k]); S.clock.i=Math.min(S.clock.i, slices()-1); save(); render(); return; }
+    case "num": { H()[d.k]+= +d.d; if(d.k!=="hon") H()[d.k]=Math.max(0,H()[d.k]); save(); render(); return; }
+    case "togglefaim": H().faim=!H().faim; save(); render(); return;
+    case "bonuscou": H().bonusCou=H().bonusCou?0:1; save(); render(); return;
+    case "qty": { const it=S.inv.find(x=>x.id===d.id); it.q+= +d.d; if(it.q<=0) S.inv=S.inv.filter(x=>x!==it); save(); render(); return; }
+    case "delitem": S.inv=S.inv.filter(x=>x.id!==d.id); save(); render(); return;
+    case "usetool": { const it=S.inv.find(x=>x.id===d.id); it.dur--; if(it.dur<=0){ S.inv=S.inv.filter(x=>x!==it); toast(it.n+" est cassé."); } else toast(it.n+" : durabilité "+it.dur); save(); render(); return; }
+    case "wear": { const it=S.inv.find(x=>x.id===d.id); if(!it.worn && S.inv.filter(x=>x.worn).length>=3){ toast("Trois vêtements au maximum."); return; } it.worn=!it.worn; save(); render(); return; }
+    case "additem": { const n=document.getElementById("newitem").value.trim(); const q=Math.max(1,+document.getElementById("newqty").value||1); if(!n) return; invAdd(n,q); if(invUsed()>invCap()) toast("Inventaire plein : débarrassez-vous d’un objet."); render(); return; }
+    case "buy": { const p=+d.p||0; if(p && H().pieces<p){ toast("Pas assez de pièces ("+H().pieces+")."); return; } if(H().hon<0 && p){ toast("Attention : avec un Honneur négatif, certains marchands refusent de vous vendre."); } H().pieces-=p; invAdd(d.n,1); toast(d.n+" ajouté"+(p?" (−"+p+" pièces)":"")); render(); return; }
+    case "learnspell": {
+      const n=document.getElementById("spellname").value.trim(); const b=(hexAt(S.cur.key)||{}).b;
+      if(!n){ toast("Donnez un nom au sort."); return; }
+      if(!b||b==="noyau"){ toast("Il faut être dans un biome pour méditer."); return; }
+      if(S.spells.some(s=>s.b===b)){ toast("Vous connaissez déjà un sort de ce biome."); return; }
+      if(S.spells.length>=H().end){ toast("Vous connaissez déjà autant de sorts que votre Endurance."); return; }
+      if(H().insp<5){ toast("Il faut 5 points d’Inspiration."); return; }
+      H().insp-=5; advance(3); S.spells.push({name:n, b}); logJ("J’apprends le sort « "+n+" » ("+BIOMES[b].n+")."); save(); render(); return;
+    }
+    case "delspell": S.spells.splice(+d.i,1); save(); render(); return;
+    case "castspell": if(H().insp<1){ toast("Plus d’Inspiration."); return; } H().insp--; save(); toast("Sort lancé : modifiez un dé de 1."); render(); return;
+    // Dés
+    case "test": UI.test=courageTest({shield:UI.shield, stim:UI.stim}); if(UI.shield){ const sh=S.inv.find(x=>x.n==="Bouclier"); if(sh){ sh.dur--; if(sh.dur<=0) S.inv=S.inv.filter(x=>x!==sh); save(); } } render(); return;
+    case "redouble": { if(H().end<=1){ toast("Endurance trop basse (minimum 1)."); return; } setAttr("end",-1); UI.test=courageTest({shield:UI.test.shield, stim:UI.test.stim, label:"Test relancé"}); render(); return; }
+    case "spellfix": { H().insp--; const t=UI.test; t.total-=1; t.spell=-1; t.ok=t.total<=t.cou; save(); render(); return; }
+    case "roll": {
+      const r=d.r; let dice, text, label;
+      if(r==="1d6"){ dice=[d6()]; text=String(dice[0]); label="1D6"; }
+      else if(r==="2d6"){ dice=[d6(),d6()]; text="Somme : "+(dice[0]+dice[1]); label="2D6"; }
+      else if(r==="d66"){ dice=[d6(),d6()]; text=dice[0]+"."+dice[1]; label="D66 (dizaines, unités)"; }
+      else { dice=Array.from({length:effCou()},d6); text="Plus haut : "+Math.max(...dice); label=effCou()+"D6, garder le plus haut"; }
+      UI.dice={dice,text,label}; render(); return;
+    }
+    case "draw": draw(); save(); render(); return;
+    case "shuffle": S.deck=shuffle(newDeck()); S.drawn=[]; save(); toast("Les 52 cartes sont mélangées."); render(); return;
+    case "tbl": { UI.results[d.id]=rollTable(d.id); save(); render(); return; }
+    case "fight": {
+      const v=document.getElementById("foe").value; const base=v==="x"?{n:"Créature"}:CREATURES[+v];
+      const am=+document.getElementById("foeame").value||base.ame||3;
+      UI.fight={n:base.n, ame:am, max:am, atk:base.atk||0, ruin:!!base.atk, log:[], paid:false, dmg:0}; render(); return;
+    }
+    case "fightfrom": { const r=getByPath(d.path); const f=r.entry.foe; UI.fight={n:f.n, ame:f.ame, max:f.ame, atk:f.atk||0, ruin:!!f.atk, log:[], paid:false, dmg:0}; closeSheet(); UI.tab="des"; render(); window.scrollTo(0,document.body.scrollHeight); return; }
+    case "attack": {
+      const f=UI.fight; if(!f.ruin && !f.paid){ H().hon--; f.paid=true; f.log.push("Vous choisissez la violence : −1 Honneur."); }
+      const t=courageTest({label:"Attaque", shield:UI.shield});
+      if(t.ok){ f.ame--; f.log.push("Dé "+t.total+" : Succès, "+f.n+" perd 1 Âme ("+f.ame+" restant)."); if(f.ame<=0){ f.log.push(f.n+" est vaincu."+(f.ruin?" Le trésor de la Ruine est à vous.":" Fouiller la dépouille : test de Courage.")); logJ(f.n+" vaincu."); } }
+      else { f.dmg = f.ruin ? f.atk : 1; f.log.push("Dé "+t.total+" : Échec, vous subissez "+f.dmg+" dégât"+(f.dmg>1?"s":"")+"."); }
+      save(); render(); return;
+    }
+    case "flee": { const f=UI.fight; const t=courageTest({label:"Fuite"}); if(t.ok){ f.log.push("Dé "+t.total+" : vous fuyez sans dommage vers un hexagone voisin."); } else { f.dmg = f.ruin? f.atk : 1; f.log.push("Dé "+t.total+" : vous fuyez, mais vous subissez "+f.dmg+" dégât"+(f.dmg>1?"s":"")+"."); } if(!f.ruin) { f.ame=f.max; } render(); return; }
+    case "fleesword": UI.fight.log.push("Pouvoir de l’épée : vous fuyez sans risque."); if(!UI.fight.ruin) UI.fight.ame=UI.fight.max; render(); return;
+    case "dmg": { const f=UI.fight; if(f.ruin){ setAttr("ame", -f.dmg); } else setAttr(d.a, -1); f.dmg=0; render(); return; }
+    case "endfight": UI.fight=null; render(); return;
+    case "pari": {
+      const m=Math.max(1,+document.getElementById("mise").value||10); if(H().pieces<m){ toast("Pas assez de pièces."); return; }
+      const ts=[courageTest(),courageTest(),courageTest()]; const w=ts.filter(t=>t.ok).length;
+      if(w>=2){ const g=m*effCou(); H().pieces+=g; UI.pari="Dés "+ts.map(t=>t.total).join(", ")+" : "+w+" Succès. Vous gagnez "+g+" pièces. Notez ce pari gagné (lunettes à 3, foulard à 5, tunique à 7)."; }
+      else { H().pieces-=m; UI.pari="Dés "+ts.map(t=>t.total).join(", ")+" : "+w+" Succès. Vous perdez votre mise de "+m+" pièces."; }
+      save(); render(); return;
+    }
+    // Générateurs
+    case "go-village": genVillage(); save(); openSheet(genSheet("Village ou ferme", villageHTML)); return;
+    case "go-comptoir": genComptoir(); save(); openSheet(genSheet("Comptoir", comptoirHTML)); return;
+    case "go-habitant": genHabitant(); save(); openSheet(genSheet("Habitant", habitantHTML)); return;
+    case "go-ruine": genRuine(); save(); openSheet(genSheet("Ruine", ruineHTML)); return;
+    case "go-ecran": genEcran(); openSheet(genSheet("Écran des langues anciennes", ecranHTML)); return;
+    case "go-mission": genMission(); save(); openSheet(genSheet("Mission", missionHTML)); return;
+    case "go-baleine": UI.results.ba=rollTable("col_baleine"); openSheet(genSheet("Sur le dos de la baleine", ()=>`<p class="small muted">Paisible : donnez-lui 1 lichen des Hérissins, puis test de Courage (échec : chute, −1 Attribut). Agressive : magie nécessaire, 2 Succès.</p>`+resultHTML(UI.results.ba,"ba"))); return;
+    case "go-bolet": UI.collectRes=chooseFrom("col_bolet"); openSheet(genSheet("Bolet Titan", ()=>UI.collectRes)); return;
+    case "go-d6": toast("1D6 = "+d6()); return;
+    case "go-pari": closeSheet(); UI.tab="des"; render(); window.scrollTo(0,document.body.scrollHeight); return;
+    case "vil2hex": { const hx=ensureHex(S.cur.key); hx.marks=hx.marks||[]; if(!hx.marks.includes("Village")&&!hx.marks.includes("Ferme")) hx.marks.push("Village"); hx.note=(hx.note?hx.note+"\n":"")+villageText(); save(); toast("Village noté en "+S.cur.key); closeSheet(); render(); return; }
+    case "vil2j": logJ("Village :\n"+villageText()); toast("Ajouté au journal"); return;
+    case "co2hex": { const hx=ensureHex(S.cur.key); hx.marks=hx.marks||[]; if(!hx.marks.includes("Comptoir")) hx.marks.push("Comptoir"); const o=UI.results.co; hx.note=(hx.note?hx.note+"\n":"")+"Comptoir ("+(o.who<=3?"Cucurbitus":"Brujas")+") : "+o.etabs.map(r=>r.entry?r.entry.t:"?").join(" ; "); save(); toast("Comptoir noté en "+S.cur.key); closeSheet(); render(); return; }
+    case "hab2j": { const r=UI.results.hab; const nm=(document.getElementById("habname").value||"").trim(); logJ("Habitant"+(nm?" « "+nm+" »":"")+" : "+[r.peuple,r.age,r.perso].map(x=>x.entry?x.entry.t:"?").join(", ")+".\nAccroche : "+(r.acc.entry?r.acc.entry.t:"?")); toast("Ajouté au journal"); return; }
+    case "ru2j": { const r=UI.results.ru; logJ("Ruine en "+S.cur.key+" : "+[r.cre,r.env,r.tre].map(x=>x.entry?x.entry.t:"?").join(" / ")); toast("Ajouté au journal"); return; }
+    case "takemission": { const r=UI.results.mi; S.missions.unshift({id:uid(), text:r.m.entry.t, reward:/aléatoire/.test(r.m.entry.t)&&r.r.entry?"Récompense : "+r.r.entry.t:"", where:"Agence en "+S.cur.key, done:false}); save(); toast("Mission ajoutée au journal"); closeSheet(); return; }
+    case "savemem": { const txt=document.getElementById("memtext").value; const words=UI.results.ec.map(r=>r.entry.t); const m={id:uid(), words, text:txt, f:null, st:null}; S.mem.push(m); m.f=ferveur(); logJ("Souvenir retrouvé ("+words.join(", ")+"), Ferveur "+m.f+"."); save(); closeSheet(); UI.tab="journal"; render(); toast("Ferveur : "+m.f); return; }
+    case "ferveur": { const m=S.mem.find(x=>x.id===d.id); m.f=ferveur(); save(); render(); toast("Ferveur : "+m.f); return; }
+    case "delmem": S.mem=S.mem.filter(x=>x.id!==d.id); save(); render(); return;
+    case "salle": setAttr(d.a,-1); S.salle=true; logJ("J’entre dans la Salle des Souvenirs et fais face à mon Prédécesseur."); save(); render(); return;
+    case "sortie": S.salle=false; UI.bat=null; save(); render(); return;
+    case "bataille": bataille(); render(); return;
+    // Journal
+    case "addj": { const t=document.getElementById("jtext").value.trim(); if(!t) return; logJ(t); render(); return; }
+    case "delj": S.journal=S.journal.filter(j=>j.id!==d.id); save(); render(); return;
+    case "jmore": UI.jmore=true; render(); return;
+    case "delmiss": S.missions=S.missions.filter(m=>m.id!==d.id); save(); render(); return;
+    case "export": { const txt=JSON.stringify(S); UI.io=`<label class="f">Texte de sauvegarde<textarea id="iobox" readonly style="min-height:120px">${esc(txt)}</textarea></label>`; render();
+      const box=document.getElementById("iobox"); try{ navigator.clipboard.writeText(txt).then(()=>toast("Sauvegarde copiée"), ()=>{ box.select(); toast("Sélectionnez et copiez le texte"); }); }catch(e){ box.select(); } return; }
+    case "import": UI.io=`<label class="f">Collez votre texte de sauvegarde<textarea id="iobox" style="min-height:120px"></textarea></label><button class="btn primary" data-act="doimport">Remplacer la partie actuelle</button>`; render(); return;
+    case "doimport": { try{ const o=JSON.parse(document.getElementById("iobox").value); if(!o.hero||!o.regions) throw 0; S=o; S.savedAt=Date.now(); save(); UI.io=null; render(); toast("Partie importée"); }catch(e){ toast("Ce texte n’est pas une sauvegarde valide."); } return; }
+    case "reset": UI.io=`<div class="banner bad"><b>Effacer cette partie et recommencer ?</b><span class="small">Copiez d’abord la sauvegarde si vous voulez la garder.</span><div class="row"><button class="btn danger" data-act="doreset">Oui, recommencer</button><button class="btn" data-act="noreset">Annuler</button></div></div>`; render(); return;
+    case "noreset": UI.io=null; render(); return;
+    case "doreset": S=null; UI={...UI, io:null, results:{}, test:null, fight:null, sheet:null, paint:null}; try{ localStorage.removeItem(KEY); }catch(e){} render(); return;
+    case "oratoire": openSheet(genSheet("Oratoire", ()=>`<p>Échangez 5 points d’Honneur (vous en avez ${H().hon}) contre +1 au maximum d’un Attribut (max 5).</p><div class="row"><button class="btn" data-act="orat" data-a="ame">Âme</button><button class="btn" data-act="orat" data-a="cou">Courage</button><button class="btn" data-act="orat" data-a="end">Endurance</button></div>`)); return;
+    case "orat": { const h=H(); if(h.hon<5){ toast("Il faut 5 points d’Honneur."); return; } if(h[d.a+"Max"]>=5){ toast("Déjà au maximum (5)."); return; } h.hon-=5; h[d.a+"Max"]++; h[d.a]++; save(); closeSheet(); render(); toast("+1 au maximum"); return; }
+    case "inn": { const g=d.g==="1"; const p=g?300:150; if(H().pieces<p){ toast("Pas assez de pièces."); return; }
+      if(g){ H().pieces-=p; const h=H(); h.ame=h.ameMax; h.cou=h.couMax; h.end=h.endMax; h.faim=false; S.clock.mealDue=false; save(); render(); toast("Nuit à l’auberge : tous les Attributs récupérés."); }
+      else openSheet(genSheet("Petite auberge", ()=>`<p>Quel Attribut récupérer entièrement ?</p><div class="row"><button class="btn" data-act="inn1" data-a="ame">Âme</button><button class="btn" data-act="inn1" data-a="cou">Courage</button><button class="btn" data-act="inn1" data-a="end">Endurance</button></div>`)); return; }
+    case "inn1": { const h=H(); h.pieces-=150; h[d.a]=h[d.a+"Max"]; h.faim=false; S.clock.mealDue=false; save(); closeSheet(); render(); return; }
+    case "death1": case "death2": case "death3": death(a); return;
+  }
+}
+function rerenderAll(){ render(); if(UI.sheet) renderSheet(); }
+function refreshResult(r){
+  const es=entriesOf(r.id); const hit=lookup(r.id, r.key);
+  r.i=hit?hit.i:null; r.entry=hit?es[hit.i]:null; r.check=false;
+  if(r.entry && r.entry.sub && !r.sub) r.sub=rollTable(r.entry.sub, r.entry.same ? r.roll : undefined);
+  if(r.entry && !r.entry.sub) r.sub=null;
+}
+function countCollect(k){ if(S.collect.day!==S.clock.day) S.collect={day:S.clock.day,count:0}; S.collect.count++; ensureHex(k).harvest=S.clock.day; }
+function chooseFrom(col){
+  const es=entriesOf(col).filter(e=>!e.choice);
+  return `<p class="small">Choisissez :</p><div class="choose">${es.map((e)=>`<button class="btn sm" data-act="pick" data-col="${col}" data-i="${entriesOf(col).indexOf(e)}">${esc(e.t)}</button>`).join("")}</div>`;
+}
+function collectFlow(k){
+  const hx=hexAt(k); const b=BIOMES[hx.b];
+  if(!UI.sheet) openSheet(hexSheet(k));
+  if(S.collect.day!==S.clock.day) S.collect={day:S.clock.day,count:0};
+  if(!b.col){ UI.collectRes=`<p class="small">Pas de table de collecte dans ce biome. Cherchez les ressources propres à ses lieux et créatures (lichen, cactus, laréons…).</p>`; renderSheet(); return; }
+  if(hx.harvest===S.clock.day){ UI.collectRes=`<p class="small" style="color:var(--lantern)">Vous avez déjà collecté dans cet hexagone aujourd’hui. Il faut vous déplacer.</p>`; renderSheet(); return; }
+  if(S.collect.count>=H().end){ UI.collectRes=`<p class="small" style="color:var(--lantern)">Vous avez déjà tenté ${S.collect.count} collectes aujourd’hui (limite : votre Endurance).</p>`; renderSheet(); return; }
+  const tool=S.inv.find(x=>x.n===b.tool && x.dur>0);
+  UI.collectRes=`<div class="result"><span class="eyebrow">${esc(T[b.col].title)} · collectes aujourd’hui ${S.collect.count}/${H().end}</span>
+    <div class="row">${tool?`<button class="btn primary" data-act="collecttool" data-id="${tool.id}" data-col="${b.col}" data-hex="${k}">${esc(tool.n)} (−1 durabilité) : choisir</button>`:`<span class="small muted">Sans ${esc(b.tool)}, il faut réussir un test de Courage.</span>`}
+    <button class="btn" data-act="collecthand" data-col="${b.col}" data-hex="${k}">À mains nues (test de Courage)</button></div>
+    ${wearsSet("Cucurbitus")?`<p class="small" style="color:var(--ok)">Ensemble Cucurbitus : quantités doublées.</p>`:""}
+    <p class="small muted">Tout objet collecté ici se revend 10 pièces dans n’importe quel village.</p></div>`;
+  renderSheet();
+}
+function ferveur(){ const n=Math.max(1,effCou()); return Math.max(...Array.from({length:n},d6)); }
+function bataille(card){
+  const c=card||draw(); const need=rollTable("bataille", c);
+  const avail=S.mem.filter(m=>!m.st && m.f);
+  let h=`<div class="result"><div class="row">${cardHTML(c)}<span>${need.entry?`<b>${esc(need.entry.t)}</b> requis`:"Enseigne inconnue : indiquez-la ci-dessous."}</span></div>`;
+  if(!need.entry){ UI.batPending=need; h+=resultHTML(need,"batneed"); UI.results.batneed=need; UI.bat=h+`</div>`; return; }
+  const n=need.entry.need;
+  let m=avail.filter(x=>x.f>=n).sort((a,b)=>a.f-b.f)[0];
+  let auto=false;
+  if(!m){ m=avail.sort((a,b)=>a.f-b.f)[0]; auto=true; }
+  if(!m){ UI.bat=h+`<p>Aucun souvenir disponible.</p></div>`; return; }
+  let wins=0, dice=[];
+  if(!auto){ dice=Array.from({length:m.f},d6); wins=dice.filter(x=>x<=effCou()).length; }
+  const won=!auto && wins>=n;
+  m.st=won?"vrai":"faux";
+  h+=`<p class="small">Souvenir éprouvé : « ${esc(m.text||m.words.join(", "))} » (Ferveur ${m.f}).</p>`;
+  if(auto) h+=`<p class="small">Aucun souvenir n’a assez de Ferveur : la bataille est perdue d’office.</p>`;
+  else h+=`<div class="dice">${dice.map(x=>`<span class="die ${x<=effCou()?"win":"lose"}">${x}</span>`).join("")}</div><p class="small">${wins} Succès sur ${n} requis.</p>`;
+  h+=`<p class="verdict ${won?"ok":"ko"}">${won?"Ce souvenir est vrai":"Ce souvenir est faux"}</p>`;
+  if(!won){ const cons=rollTable("bataille_perte", c); UI.results.batcons=cons; h+=resultHTML(cons,"batcons"); }
+  logJ("Bataille des souvenirs : « "+(m.text||m.words.join(", "))+" » est "+(won?"vrai":"faux")+".");
+  if(S.mem.filter(x=>x.st==="vrai").length>=3) h+=`<div class="banner"><b>La vérité remémorée.</b><span class="small">Trois vrais souvenirs : votre Prédécesseur est défait. Écrivez dans le journal la vérité sur le passé.</span></div>`;
+  UI.bat=h+`</div>`; save();
+}
+function death(a){
+  const h=H();
+  if(a==="death3"){ h.ame=1; logJ("Je me réveille, affaibli, dans un lieu sûr."); save(); render(); return; }
+  const arch=h.arch;
+  if(a==="death1"){
+    const others=Object.keys(ARCHES).filter(x=>x!==arch);
+    openSheet(genSheet("Nouveau Protecteur", ()=>`<p class="small">Il naît au Noyau sans objets ni pièces ; il hérite seulement des souvenirs.</p><div class="row">${others.map(o=>`<button class="btn" data-act="reborn" data-arch="${o}">${o}</button>`).join("")}</div>`));
+    document.addEventListener("click", function once(ev){ const b=ev.target.closest('[data-act="reborn"]'); if(!b) return; document.removeEventListener("click", once, true);
+      Object.assign(S.hero, {arch:b.dataset.arch, ame:4, ameMax:4, cou:3, couMax:3, end:2, endMax:2, pieces:100, faim:false, bonusCou:0});
+      S.inv=[{id:uid(), n:"Nourriture", q:4}]; S.spells=[]; S.cur={reg:0, key:START}; S.clock={day:S.clock.day, night:false, i:0, mealDue:false};
+      logJ("Un nouveau Protecteur ("+b.dataset.arch+") s’éveille au Noyau."); save(); closeSheet(); render(); }, true);
+    return;
+  }
+  h.ame=1; S.cur={reg:S.cur.reg, key:S.cur.key}; logJ("Un nouveau Protecteur du même Archétype renaît et rejoint un hexagone voisin du lieu de ma mort."); save(); toast("Placez-vous sur un hexagone exploré voisin."); render();
+}
+
+/* ================== Démarrage ================== */
+function start(){
+  S = localLoad();
+  UI.scrollMap = true;
+  render();
+  initCloud();
+}
+start();
+</script>
